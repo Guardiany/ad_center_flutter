@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.ahd.ad_center_flutter">
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+</manifest>

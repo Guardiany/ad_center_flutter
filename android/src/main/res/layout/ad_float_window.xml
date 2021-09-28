@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="28px"
+            android:layout_height="28px"
+            android:layout_marginLeft="12px"
+            android:layout_marginRight="6dp"
+            android:layout_weight="1"
+            android:src="@drawable/ad_tt_icon" />
+
+        <ImageView
+            android:id="@+id/tt_state_image"
+            android:layout_width="12px"
+            android:layout_height="12px"
+            android:layout_weight="1"
+            android:src="@drawable/ad_init_load_color"
+            android:state_enabled="true"
+            android:layout_gravity="center"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="6px">
+
+        <ImageView
+            android:layout_width="28px"
+            android:layout_height="28px"
+            android:layout_marginLeft="12px"
+            android:layout_marginRight="6dp"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/ad_ks_icon" />
+
+        <ImageView
+            android:id="@+id/ks_state_image"
+            android:layout_width="12px"
+            android:layout_height="12px"
+            android:layout_weight="1"
+            android:src="@drawable/ad_init_load_color"
+            android:state_enabled="true"
+            android:layout_gravity="center"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="6px">
+
+        <ImageView
+            android:layout_width="28px"
+            android:layout_height="28px"
+            android:layout_marginLeft="12px"
+            android:layout_marginRight="6dp"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/ad_ylh_icon" />
+
+        <ImageView
+            android:id="@+id/ylh_state_image"
+            android:layout_width="12px"
+            android:layout_height="12px"
+            android:layout_weight="1"
+            android:src="@drawable/ad_init_load_color"
+            android:state_enabled="true"
+            android:layout_gravity="center"/>
+    </LinearLayout>
+</LinearLayout>
