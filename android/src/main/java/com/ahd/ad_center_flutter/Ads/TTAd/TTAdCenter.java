@@ -1,8 +1,12 @@
 package com.ahd.ad_center_flutter.Ads.TTAd;
 
+import static com.bytedance.sdk.openadsdk.TTAdLoadType.LOAD;
+import static com.bytedance.sdk.openadsdk.TTAdLoadType.PRELOAD;
+
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
+import android.view.View;
 
 import com.ahd.ad_center_flutter.AdCenter;
 import com.ahd.ad_center_flutter.Ads.AdFather;
@@ -17,9 +21,14 @@ import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTAdSdk;
 import com.bytedance.sdk.openadsdk.TTRewardVideoAd;
+import com.bytedance.sdk.openadsdk.TTSplashAd;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import io.flutter.plugin.common.MethodChannel;
 
 /**
  * Author by GuangMingfei
@@ -39,6 +48,7 @@ public class TTAdCenter implements AdFather {
     private AdPreLoadListener mAdPreLoadListener;
     private AdDisplayListener mAdDisplayListener;
     private Activity mContext;
+    private TTSplashAd ttSplashAd;
     //头条ID
     private String ksId;
     //快手激励广告ID
@@ -54,6 +64,10 @@ public class TTAdCenter implements AdFather {
             ttAdCenter = new TTAdCenter();
         }
         return ttAdCenter;
+    }
+    
+    public TTSplashAd getTtSplashAd() {
+        return ttSplashAd;
     }
 
     @Override
@@ -89,6 +103,67 @@ public class TTAdCenter implements AdFather {
                 .supportMultiProcess(true)//是否支持多进程
                 .needClearTaskReset()
                 .build();
+    }
+
+    public void preLoadSplashAd(String codeId, final MethodChannel.Result result) {
+        if(!isInit){
+            LogTools.printLog(this.getClass(), "头条初始化未完成");
+            Map<String, Object> resultMap = new HashMap<>();
+            resultMap.put("result", "error");
+            resultMap.put("message", "初始化未完成");
+            sendResult(resultMap, result);
+            //初始化失败
+            return;
+        }
+        ttAdManager = TTAdSdk.getAdManager();
+        TTAdNative mTTAdNative = ttAdManager.createAdNative(mContext);
+        AdSlot adSlot = new AdSlot.Builder()
+                .setCodeId(codeId)
+                .setImageAcceptedSize(1080, 1920)
+                .setAdLoadType(PRELOAD)//推荐使用，用于标注此次的广告请求用途为预加载（当做缓存）还是实时加载，方便后续为开发者优化相关策略
+                .build();
+        mTTAdNative.loadSplashAd(adSlot, new TTAdNative.SplashAdListener() {
+            @Override
+            public void onError(int i, String s) {
+                Map<String, Object> resultMap = new HashMap<>();
+                resultMap.put("result", "error");
+                resultMap.put("message", "开屏广告加载失败："+s);
+                sendResult(resultMap, result);
+            }
+
+            @Override
+            public void onTimeout() {
+                Map<String, Object> resultMap = new HashMap<>();
+                resultMap.put("result", "error");
+                resultMap.put("message", "开屏广告加载超时");
+                sendResult(resultMap, result);
+            }
+
+            @Override
+            public void onSplashAdLoad(TTSplashAd ttSplashAd) {
+                if (ttSplashAd == null) {
+                    Map<String, Object> resultMap = new HashMap<>();
+                    resultMap.put("result", "error");
+                    resultMap.put("message", "拉取广告失败");
+                    sendResult(resultMap, result);
+                    return;
+                }
+                TTAdCenter.this.ttSplashAd = ttSplashAd;
+                Map<String, Object> resultMap = new HashMap<>();
+                resultMap.put("result", "success");
+                resultMap.put("message", "广告加载成功");
+                sendResult(resultMap, result);
+            }
+        }, 3000);
+    }
+
+    private void sendResult(final Map<String, Object> resultMap, final MethodChannel.Result result) {
+        mContext.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                result.success(resultMap);
+            }
+        });
     }
 
     @Override

@@ -5,6 +5,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.ahd.ad_center_flutter.Ads.TTAd.TTAdCenter;
+import com.ahd.ad_center_flutter.Ads.TTAd.TTSplashAdViewFactory;
 import com.ahd.ad_center_flutter.OpenListener.PlayAdListener;
 
 import java.util.HashMap;
@@ -31,6 +33,8 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "ad_center_flutter");
     channel.setMethodCallHandler(this);
+    flutterPluginBinding.getPlatformViewRegistry().registerViewFactory(
+            "com.ahd.TTSplashView", new TTSplashAdViewFactory(flutterPluginBinding.getBinaryMessenger()));
   }
 
   @Override
@@ -44,6 +48,9 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
         break;
       case "display":
         displayAd(call, result);
+        break;
+      case "preLoadSplash":
+        preLoadSplash(call, result);
         break;
       case "destroy":
         AdCenter.getInstance().onDestroy();
@@ -64,8 +71,8 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
     String ksAndroidAppId = call.argument("ksAndroidAppId");
     String ksRewardAndroidId = call.argument("ksRewardAndroidId");
     //默认渠道号：NORMAL:CSJ
-    String channelAndroid = call.argument("channelAndroid");
-    String appIdAndroid = call.argument("appIdAndroid");
+    String channelAndroid = call.argument("channel");
+    String appIdAndroid = call.argument("appId");
     String userId = call.argument("userId");
 
     AdCenter.APPNAME = appName;
@@ -76,8 +83,12 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
     AdCenter.KUAISHOUCATID = ksAndroidAppId;
     AdCenter.KUAISHOUPOSID = ksRewardAndroidId;
 
-    AdCenter.getInstance().initAd(activity, channelAndroid, appIdAndroid, userId);
-    result.success(true);
+    AdCenter.getInstance().initAd(activity, channelAndroid, appIdAndroid, userId, result);
+  }
+
+  private void preLoadSplash(MethodCall call, Result result) {
+    String codeId = call.argument("androidCodeId");
+    TTAdCenter.getInstance().preLoadSplashAd(codeId, result);
   }
 
   private void displayAd(MethodCall call, final Result result) {

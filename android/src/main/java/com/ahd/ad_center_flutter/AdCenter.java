@@ -22,7 +22,10 @@ import com.ahd.ad_center_flutter.OpenListener.PlayAdListener;
 import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
+import io.flutter.plugin.common.MethodChannel;
 import okhttp3.Response;
 
 /**
@@ -61,6 +64,7 @@ public class AdCenter {
     private AdDisplayListener adDisplayListener;
     private PlayAdListener mPlayAdListener;
     private Activity mActivity;
+    private MethodChannel.Result result;
 
     private long tolerateTime = 1000 * 60 * 3;
 
@@ -244,10 +248,11 @@ public class AdCenter {
     }
 
 
-    public void initAd(Activity activity,String channelId,String appId,String userId) {
+    public void initAd(Activity activity, String channelId, String appId, String userId, MethodChannel.Result result) {
         if(mActivity != null){
             return;
         }
+        this.result = result;
         HttpCenter.appId = appId;
         HttpCenter.userId = userId;
         HttpCenter.channel = channelId;
@@ -297,12 +302,30 @@ public class AdCenter {
                 }
 
                 if (TTInitOK && KSInitOK && YLHInitOK) {
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Map<String, Object> resultMap = new HashMap<>();
+                            resultMap.put("result", "success");
+                            resultMap.put("message", "广告Sdk初始化成功");
+                            result.success(resultMap);
+                        }
+                    });
                     getAdFromNet(true);
                 }
             }
 
             @Override
-            public void onFailed(int adFlag, String errorMessage) {
+            public void onFailed(final int adFlag, final String errorMessage) {
+                mActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Map<String, Object> resultMap = new HashMap<>();
+                        resultMap.put("result", "error");
+                        resultMap.put("message", getAdName(adFlag)+"Sdk初始化失败："+errorMessage);
+                        result.success(resultMap);
+                    }
+                });
                 LogTools.printLog(this.getClass(), getAdName(adFlag) + "初始化失败：" + errorMessage);
             }
         };

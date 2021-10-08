@@ -113,3 +113,27 @@ AdCenterFlutter.displayAd(
       },
     );
 ```
+
+#### 3、开屏广告
+```Dart
+///预加载开屏广告
+await AdCenterFlutter.preLoadPangolinSplash(
+        androidCodeId: _pangolinSplashAndroidId,
+        success: () {
+          ///预加载成功
+        },
+        error: (e) {
+          ///预加载失败
+          print(e);
+        },
+      );
+
+///显示开屏广告
+@override
+Widget build(BuildContext context) {
+  return AdCenterFlutter.pangolinSplashView(
+    androidCodeId: _pangolinSplashAndroidId,
+    callBack: callBack,
+  );
+}
+```
