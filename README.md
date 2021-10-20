@@ -137,3 +137,17 @@ Widget build(BuildContext context) {
   );
 }
 ```
+
+#### 4、Banner广告
+```Dart
+///显示Banner广告
+@override
+Widget build(BuildContext context) {
+  return AdCenterFlutter.pangolinBannerView(
+    androidCodeId: _pangolinBannerAndroidId,
+    callBack: callBack,
+    width: width,
+    height: height,
+  );
+}
+```

@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:ad_center_flutter/pangolin_banner_view.dart';
 import 'package:ad_center_flutter/pangolin_splash_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,9 +22,9 @@ typedef SplashPreLoadError(String error);
 
 ///开屏广告回调
 class PangolinSplashAdCallBack {
-  OnSplashAdShow? onShow;
-  OnSplashAdFail? onFail;
-  OnSplashAdClick? onClick;
+  OnAdShow? onShow;
+  OnAdFail? onFail;
+  OnAdClick? onClick;
   OnSplashAdFinish? onFinish;
   OnSplashAdSkip? onSkip;
   OnSplashAdTimeOut? onTimeOut;
@@ -49,12 +50,25 @@ class PangolinSplashAdCallBack {
         this.onSkip,
         this.onTimeOut});
 }
-///开屏广告显示
-typedef OnSplashAdShow = void Function();
-///开屏广告错误
-typedef OnSplashAdFail = void Function(String error);
-///开屏广告点击
-typedef OnSplashAdClick = void Function();
+
+///Banner广告回调
+class PangolinBannerAdCallBack {
+
+  OnAdShow? onShow;
+  OnAdFail? onFail;
+  OnAdClick? onClick;
+
+  PangolinBannerAdCallBack({
+    this.onFail, this.onShow, this.onClick,
+  });
+}
+
+///广告显示
+typedef OnAdShow = void Function();
+///广告错误
+typedef OnAdFail = void Function(String error);
+///广告点击
+typedef OnAdClick = void Function();
 ///开屏广告倒计时结束
 typedef OnSplashAdFinish = void Function();
 ///开屏广告跳过
@@ -199,66 +213,20 @@ class AdCenterFlutter {
     );
   }
 
-//  /直接以dialog显示穿山甲开屏广告
-  // static void showPangolinSplashView({
-  //   required BuildContext context,
-  //   required String codeId,
-  //   PangolinSplashAdCallBack? callBack,
-  // }) {
-  //   showDialog(context: context, barrierColor: Colors.black, builder: (con) {
-  //     return pangolinSplashView(
-  //       androidCodeId: codeId,
-  //       callBack: PangolinSplashAdCallBack(
-  //         onSkip: () {
-  //           Navigator.pop(con);
-  //           if (callBack != null) {
-  //             if (callBack.onSkip != null) {
-  //               callBack.onSkip!();
-  //             }
-  //           }
-  //         },
-  //         onFinish: () {
-  //           Navigator.pop(con);
-  //           if (callBack != null) {
-  //             if (callBack.onFinish != null) {
-  //               callBack.onFinish!();
-  //             }
-  //           }
-  //         },
-  //         onFail: (e) {
-  //           Navigator.pop(con);
-  //           if (callBack != null) {
-  //             if (callBack.onFail != null) {
-  //               callBack.onFail!(e);
-  //             }
-  //           }
-  //         },
-  //         onTimeOut: () {
-  //           Navigator.pop(con);
-  //           if (callBack != null) {
-  //             if (callBack.onTimeOut != null) {
-  //               callBack.onTimeOut!();
-  //             }
-  //           }
-  //         },
-  //         onClick: () {
-  //           if (callBack != null) {
-  //             if (callBack.onClick != null) {
-  //               callBack.onClick!();
-  //             }
-  //           }
-  //         },
-  //         onShow: () {
-  //           if (callBack != null) {
-  //             if (callBack.onShow != null) {
-  //               callBack.onShow!();
-  //             }
-  //           }
-  //         },
-  //       ),
-  //     );
-  //   });
-  // }
+  ///获取穿山甲banner广告
+  static Widget pangolinBannerView({
+    required String androidCodeId,
+    PangolinBannerAdCallBack? callBack,
+    double? width,
+    double? height,
+  }) {
+    return PangolinBannerView(
+      codeId: androidCodeId,
+      callBack: callBack,
+      width: width,
+      height: height,
+    );
+  }
 
   ///广告模块销毁
   static Future destory() async {
