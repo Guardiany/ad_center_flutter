@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'ad_center_flutter'
-  s.version          = '0.0.1'
+  s.version          = '0.1.0'
   s.summary          = 'A new Flutter project.'
   s.description      = <<-DESC
 A new Flutter project.
@@ -17,6 +17,10 @@ A new Flutter project.
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
   s.platform = :ios, '8.0'
+  s.dependency 'GDTMobSDK'
+  s.dependency 'Ads-CN'
+  s.dependency 'KSAdSDK'
+  s.static_framework = true
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }

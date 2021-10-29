@@ -1,0 +1,45 @@
+PODS:
+  - ad_center_flutter (0.0.1):
+    - Ads-CN
+    - Flutter
+    - GDTMobSDK
+    - KSAdSDK
+  - Ads-CN (3.9.0.4):
+    - Ads-CN/BUAdSDK (= 3.9.0.4)
+  - Ads-CN/BUAdSDK (3.9.0.4):
+    - Ads-CN/BUFoundation
+    - Ads-CN/Domestic
+  - Ads-CN/BUFoundation (3.9.0.4)
+  - Ads-CN/Domestic (3.9.0.4)
+  - Flutter (1.0.0)
+  - GDTMobSDK (4.13.02):
+    - GDTMobSDK/GDTMobSDK (= 4.13.02)
+  - GDTMobSDK/GDTMobSDK (4.13.02)
+  - KSAdSDK (3.3.15)
+
+DEPENDENCIES:
+  - ad_center_flutter (from `.symlinks/plugins/ad_center_flutter/ios`)
+  - Flutter (from `Flutter`)
+
+SPEC REPOS:
+  trunk:
+    - Ads-CN
+    - GDTMobSDK
+    - KSAdSDK
+
+EXTERNAL SOURCES:
+  ad_center_flutter:
+    :path: ".symlinks/plugins/ad_center_flutter/ios"
+  Flutter:
+    :path: Flutter
+
+SPEC CHECKSUMS:
+  ad_center_flutter: dc3360dd3aaffcc5e26044ee63feba20e72fb61e
+  Ads-CN: ad511239a53d06e91b3b31b60fccebc3be466f48
+  Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
+  GDTMobSDK: c614fccaf8267a6fd6eeecb0501d7cd804326003
+  KSAdSDK: a63807f57cb01a693bdd102353d4829555e6e66a
+
+PODFILE CHECKSUM: 8e679eca47255a8ca8067c4c67aab20e64cb974d
+
+COCOAPODS: 1.10.2

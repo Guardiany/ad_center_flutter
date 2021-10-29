@@ -116,13 +116,18 @@ class AdCenterFlutter {
     required String tencentRewardAndroidId,
     required String ksAndroidAppId,
     required String ksRewardAndroidId,
+    required String pangolinIosAppId,
+    required String pangolinRewardIosId,
+    required String tencentIosAppId,
+    required String tencentRewardIosId,
+    required String ksIosAppId,
+    required String ksRewardIosId,
     String channel = 'NORMAL:CSJ',
     required String appId,
     required String userId,
     AdCenterInitSuccess? onSuccess,
     AdCenterInitError? onError,
   }) async {
-    if (Platform.isAndroid) {
     final result = await _channel.invokeMethod('init', {
       'appName':appName,
       'pangolinAndroidAppId':pangolinAndroidAppId,
@@ -131,6 +136,12 @@ class AdCenterFlutter {
       'tencentRewardAndroidId':tencentRewardAndroidId,
       'ksAndroidAppId':ksAndroidAppId,
       'ksRewardAndroidId':ksRewardAndroidId,
+      'pangolinIosAppId':pangolinIosAppId,
+      'pangolinIosRewardId':pangolinRewardIosId,
+      'tencentIosAppId':tencentIosAppId,
+      'tencentIosRewardId':tencentRewardIosId,
+      'ksIosAppId':ksIosAppId,
+      'ksIosRewardId':ksRewardIosId,
       'channel':channel,
       'appId':appId,
       'userId':userId,
@@ -144,7 +155,6 @@ class AdCenterFlutter {
       if (onError != null) {
         onError(result['message']);
       }
-    }
     }
   }
 
@@ -162,19 +172,17 @@ class AdCenterFlutter {
     AdCenterDisplaySuccess? onSuccess,
     AdCenterDisplayError? onError,
   }) async {
-    if (Platform.isAndroid) {
-      final result = await _channel.invokeMethod('display', {
-        'functionId':functionId
-      });
-      if (result['result'] == 'success') {
-        if (onSuccess != null) {
-          onSuccess();
-        }
+    final result = await _channel.invokeMethod('display', {
+      'functionId':functionId
+    });
+    if (result['result'] == 'success') {
+      if (onSuccess != null) {
+        onSuccess();
       }
-      if (result['result'] == 'error') {
-        if (onError != null) {
-          onError(result['message']);
-        }
+    }
+    if (result['result'] == 'error') {
+      if (onError != null) {
+        onError(result['message']);
       }
     }
   }
