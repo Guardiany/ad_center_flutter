@@ -1,5 +1,10 @@
 #import "AdCenterFlutterPlugin.h"
 #import "AdCenter.h"
+#import "PangolinSplashViewFactory.h"
+#import "PangolinBannerViewFactory.h"
+#import "PangolinSplashView.h"
+
+PangolinSplashViewFactory *splashViewFactory;
 
 @implementation AdCenterFlutterPlugin {
     AdCenter *adCenter;
@@ -11,6 +16,9 @@
             binaryMessenger:[registrar messenger]];
   AdCenterFlutterPlugin* instance = [[AdCenterFlutterPlugin alloc] init];
   [registrar addMethodCallDelegate:instance channel:channel];
+    splashViewFactory = [[PangolinSplashViewFactory alloc] initWithMessenger:registrar.messenger];
+    [registrar registerViewFactory: splashViewFactory withId:@"com.ahd.TTSplashView"];
+    [registrar registerViewFactory:[[PangolinBannerViewFactory alloc] initWithMessenger:registrar] withId:@"com.ahd.TTBannerView"];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -19,6 +27,16 @@
   }
   else if ([@"init" isEqualToString:call.method]) {
       [self initAdCenter:call result:result];
+  }
+  else if ([@"preLoadSplash" isEqualToString:call.method]) {
+//      NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
+//      result(resultDic);
+      NSDictionary *dic = call.arguments;
+      NSString *iosCodeId = [dic valueForKey:@"iosCodeId"];
+      PangolinSplashView *splashView = [[PangolinSplashView alloc] init];
+      [splashView preLoadSplash:iosCodeId result:result didLoad:^{
+          [splashViewFactory setSplashView:splashView];
+      }];
   }
   else if ([@"display" isEqualToString:call.method]) {
       if (adCenter) {

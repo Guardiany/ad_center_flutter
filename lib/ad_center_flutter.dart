@@ -190,22 +190,22 @@ class AdCenterFlutter {
   ///开屏广告预加载
   static Future preLoadPangolinSplash({
     required String androidCodeId,
+    required String iosCodeId,
     SplashPreLoadSuccess? success,
     SplashPreLoadError? error,
   }) async {
-    if (Platform.isAndroid) {
-      final result = await _channel.invokeMethod('preLoadSplash', {
-        'androidCodeId':androidCodeId
-      });
-      if (result['result'] == 'success') {
-        if (success != null) {
-          success();
-        }
+    final result = await _channel.invokeMethod('preLoadSplash', {
+      'androidCodeId':androidCodeId,
+      'iosCodeId':iosCodeId
+    });
+    if (result['result'] == 'success') {
+      if (success != null) {
+        success();
       }
-      if (result['result'] == 'error') {
-        if (error != null) {
-          error(result['message']);
-        }
+    }
+    if (result['result'] == 'error') {
+      if (error != null) {
+        error(result['message']);
       }
     }
   }
@@ -213,10 +213,12 @@ class AdCenterFlutter {
   ///获取穿山甲开屏广告
   static Widget pangolinSplashView({
     required String androidCodeId,
+    required String iosCodeId,
     PangolinSplashAdCallBack? callBack,
   }) {
     return PangolinSplashView(
       codeId: androidCodeId,
+      iosCodeId: iosCodeId,
       callBack: callBack,
     );
   }
@@ -224,12 +226,14 @@ class AdCenterFlutter {
   ///获取穿山甲banner广告
   static Widget pangolinBannerView({
     required String androidCodeId,
+    required String iosCodeId,
     PangolinBannerAdCallBack? callBack,
     double? width,
     double? height,
   }) {
     return PangolinBannerView(
       codeId: androidCodeId,
+      iosCodeId: iosCodeId,
       callBack: callBack,
       width: width,
       height: height,

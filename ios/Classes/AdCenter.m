@@ -245,7 +245,7 @@
         }];
     } else {
         BOOL needUploadData = false;
-        int tolerateTime = 1000 * 60 * 3;
+        int tolerateTime = 60 * 3;
         switch (currentAd) {
             case 1:
             {
@@ -292,7 +292,7 @@
                 [self getAdFromNet];
             }];
         } else {
-            [httpCenter uploadAdResult:currentSource adFlag:adType flag:state jumpFlag:0 callback:^{
+            [httpCenter uploadAdResult:currentSource adFlag:adType flag:state jumpFlag:1 callback:^{
                 NSLog(@"广告上传服务器跳过数据：%@", [self getAdName:self->currentAd]);
                 [self getAdFromNet];
             }];
@@ -465,6 +465,11 @@
 
 - (void)gdt_rewardVideoAdDidClose:(GDTRewardVideoAd *)rewardedVideoAd {
     [self displaySuccess:3];
+}
+
+#pragma mark - 开屏广告
+- (void)preLoadSplashAd:(NSString*)codeId result:(FlutterResult)result {
+    
 }
 
 @end

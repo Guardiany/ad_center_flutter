@@ -10,12 +10,14 @@ class PangolinBannerView extends StatefulWidget {
   const PangolinBannerView({
     Key? key,
     required this.codeId,
+    required this.iosCodeId,
     this.callBack,
     this.width,
     this.height,
   }) : super(key: key);
 
   final String codeId;
+  final String iosCodeId;
   final PangolinBannerAdCallBack? callBack;
   final double? width;
   final double? height;
@@ -37,7 +39,7 @@ class _PangolinBannerViewState extends State<PangolinBannerView> {
         viewType: _viewType,
         creationParams: {
           'androidCodeId': widget.codeId,
-          'iosCodeId': '',
+          'iosCodeId': widget.iosCodeId,
           'width': widget.width,
           'height': widget.height,
         },
@@ -45,7 +47,17 @@ class _PangolinBannerViewState extends State<PangolinBannerView> {
         creationParamsCodec: const StandardMessageCodec(),
       );
     } else {
-      return Container();
+      return UiKitView(
+        viewType: _viewType,
+        creationParams: {
+          'androidCodeId': widget.codeId,
+          'iosCodeId': widget.iosCodeId,
+          'width': widget.width,
+          'height': widget.height,
+        },
+        onPlatformViewCreated: _registerChannel,
+        creationParamsCodec: const StandardMessageCodec(),
+      );
     }
   }
 
@@ -80,5 +92,13 @@ class _PangolinBannerViewState extends State<PangolinBannerView> {
         }
         break;
     }
+  }
+
+  @override
+  void dispose() {
+    if (_channel != null) {
+      _channel?.invokeMethod('dispose');
+    }
+    super.dispose();
   }
 }
