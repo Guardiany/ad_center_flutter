@@ -102,6 +102,6 @@ public class TTBannerView implements PlatformView {
 
     @Override
     public void dispose() {
-
+        mExpressContainer.removeAllViews();
     }
 }

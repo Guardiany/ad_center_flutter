@@ -29,8 +29,6 @@ PangolinSplashViewFactory *splashViewFactory;
       [self initAdCenter:call result:result];
   }
   else if ([@"preLoadSplash" isEqualToString:call.method]) {
-//      NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
-//      result(resultDic);
       NSDictionary *dic = call.arguments;
       NSString *iosCodeId = [dic valueForKey:@"iosCodeId"];
       PangolinSplashView *splashView = [[PangolinSplashView alloc] init];

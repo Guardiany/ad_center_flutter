@@ -96,7 +96,7 @@ class _PangolinBannerViewState extends State<PangolinBannerView> {
 
   @override
   void dispose() {
-    if (_channel != null) {
+    if (_channel != null && Platform.isIOS) {
       _channel?.invokeMethod('dispose');
     }
     super.dispose();

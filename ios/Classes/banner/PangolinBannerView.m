@@ -58,6 +58,10 @@
     }
 }
 
++ (void)registerWithRegistrar:(nonnull NSObject<FlutterPluginRegistrar> *)registrar {
+    
+}
+
 - (void)nativeExpressBannerAdViewDidLoad:(BUNativeExpressBannerView *)bannerAdView {
     NSLog(@"Banner广告加载成功");
 //    [container.rootViewController.view addSubview:bannerAdView];

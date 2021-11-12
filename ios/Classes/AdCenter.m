@@ -5,6 +5,7 @@
 //  Created by 爱互动 on 2021/10/28.
 //
 
+#import <AppTrackingTransparency/AppTrackingTransparency.h>
 #import <Foundation/Foundation.h>
 #import "AdCenter.h"
 #import <BUAdSDK/BUAdSDK.h>
@@ -72,6 +73,11 @@
     toastIntance = [JSToastDialogs shareInstance];
     
     NSLog(@"%@", @"开始初始化广告SDK");
+    if (@available(iOS 14, *)) {
+        [ATTrackingManager requestTrackingAuthorizationWithCompletionHandler:^(ATTrackingManagerAuthorizationStatus status) {
+            NSLog(@"%@", @"ATT权限");
+        }];
+    }
     [self initKs];
     [self initTencent];
     [self initPangolin];

@@ -125,6 +125,6 @@ public class TTSplashAdView implements PlatformView {
 
     @Override
     public void dispose() {
-
+        mExpressContainer.removeAllViews();
     }
 }

@@ -156,6 +156,11 @@ public class KsAdCenter implements AdFather {
                     LogTools.printLog(this.getClass(), "快手播放监听器:onRewardVerify");
                     mAdDisplayListener.onVideoComplete(AdCenter.KSAD);
                 }
+
+                @Override
+                public void onRewardStepVerify(int i, int i1) {
+                    LogTools.printLog(this.getClass(), "快手播放监听器:onRewardStepVerify");
+                }
             });
 
             startTimerListener();
