@@ -94,7 +94,10 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
     TTAdCenter.getInstance().preLoadSplashAd(codeId, result);
   }
 
+  private boolean isResultUsed = false;
+
   private void displayAd(MethodCall call, final Result result) {
+    isResultUsed = false;
     String functionId = call.argument("functionId");
     AdCenter.getInstance().displayAd(functionId, new PlayAdListener() {
       @Override
@@ -103,10 +106,14 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
         activity.runOnUiThread(new Runnable() {
           @Override
           public void run() {
+            if (isResultUsed) {
+              return;
+            }
             Map<String, Object> resultMap = new HashMap<>();
             resultMap.put("result", "success");
             resultMap.put("message", "广告播放成功");
             result.success(resultMap);
+            isResultUsed = true;
           }
         });
       }
@@ -117,11 +124,15 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
         activity.runOnUiThread(new Runnable() {
           @Override
           public void run() {
+            if (isResultUsed) {
+              return;
+            }
             Map<String, Object> resultMap = new HashMap<>();
             resultMap.put("result", "error");
             resultMap.put("errorCode", errorCode);
             resultMap.put("message", message);
             result.success(resultMap);
+            isResultUsed = true;
           }
         });
       }
