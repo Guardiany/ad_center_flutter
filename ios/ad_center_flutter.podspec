@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'ad_center_flutter'
-  s.version          = '0.2.0'
+  s.version          = '0.4.0'
   s.summary          = 'A new Flutter project.'
   s.description      = <<-DESC
 A new Flutter project.
@@ -18,7 +18,7 @@ A new Flutter project.
   s.dependency 'Flutter'
   s.platform = :ios, '8.0'
   s.dependency 'GDTMobSDK'
-  s.dependency 'Ads-CN'
+  s.dependency 'Ads-CN', '~> 4.2.0.2'
   s.dependency 'KSAdSDK'
   s.static_framework = true
 

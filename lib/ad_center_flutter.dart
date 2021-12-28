@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:ad_center_flutter/pangolin_banner_view.dart';
+import 'package:ad_center_flutter/pangolin_native_view.dart';
 import 'package:ad_center_flutter/pangolin_splash_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -237,6 +238,26 @@ class AdCenterFlutter {
       callBack: callBack,
       width: width,
       height: height,
+    );
+  }
+
+  ///获取穿山甲信息流广告
+  static Widget pangolinNativeAdView({
+    required String androidCodeId,
+    required String iosCodeId,
+    PangolinBannerAdCallBack? callBack,
+    double? width,
+    double? height,
+    double? positionX,
+    double? positionY,
+  }) {
+    return PangolinNativeView(
+      androidCodeId: androidCodeId,
+      iosCodeId: iosCodeId,
+      width: width,
+      height: height,
+      positionX: positionX,
+      positionY: positionY,
     );
   }
 

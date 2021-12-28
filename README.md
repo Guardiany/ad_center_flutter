@@ -22,7 +22,37 @@ ad_center_flutter:
 ```
 
 #### 2、IOS
-开发中
+Info.plist中添加：
+```
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+	<true/>
+</dict>
+<key>NSUserTrackingUsageDescription</key>
+<string>该标识符将用于向您投放个性化广告</string>
+<key>SKAdNetworkItems</key>
+<array>
+    <dict>
+        <key>SKAdNetworkIdentifier</key>
+        <string>238da6jt44.skadnetwork</string>
+    </dict>
+    <dict>
+        <key>SKAdNetworkIdentifier</key>
+        <string>x2jnk7ly8j.skadnetwork</string>
+    </dict>
+    <dict>
+        <key>SKAdNetworkIdentifier</key>
+        <string>22mmun2rn5.skadnetwork</string>
+    </dict>
+    <dict>
+        <key>SKAdNetworkIdentifier</key>
+        <string>r3y5dwb26t.skadnetwork</string>
+    </dict>
+</array>
+<key>io.flutter.embedded_views_preview</key>
+<true/>
+```
 
 #### 3、Android
 必要权限请参考官方文档
@@ -146,6 +176,22 @@ Widget build(BuildContext context) {
   return AdCenterFlutter.pangolinBannerView(
     androidCodeId: _pangolinBannerAndroidId,
     callBack: callBack,
+    width: width,
+    height: height,
+  );
+}
+```
+
+#### 4、信息流广告
+```Dart
+///显示信息流广告
+@override
+Widget build(BuildContext context) {
+  return AdCenterFlutter.pangolinNativeAdView(
+    androidCodeId: 'androidCodeId',
+    iosCodeId: 'iosCodeId',
+    positionX: positionX,
+    positionY: positionY,
     width: width,
     height: height,
   );

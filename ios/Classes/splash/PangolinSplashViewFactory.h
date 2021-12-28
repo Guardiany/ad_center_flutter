@@ -14,6 +14,4 @@
 
 - (instancetype)initWithMessenger:(NSObject<FlutterBinaryMessenger>*)messager;
 
-- (void)setSplashView:(PangolinSplashView*)splash_view;
-
 @end

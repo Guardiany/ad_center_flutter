@@ -16,7 +16,7 @@ typedef void(^loadSuccess)(void);
 -(instancetype)initWithFrame:(CGRect)frame
                   viewIdentifier:(int64_t)viewId
                        arguments:(id _Nullable)args
-                 binaryMessenger:(NSObject<FlutterBinaryMessenger>*)messenger splashView:(BUSplashAdView*)splash_view;
+                 binaryMessenger:(NSObject<FlutterBinaryMessenger>*)messenger;
 
 - (BUSplashAdView*)getSplashView;
 

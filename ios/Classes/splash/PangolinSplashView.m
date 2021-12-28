@@ -27,12 +27,12 @@
     return [super init];
 }
 
-- (instancetype)initWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args binaryMessenger:(NSObject<FlutterBinaryMessenger> *)messenger splashView:(BUSplashAdView *)splash_view {
+- (instancetype)initWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args binaryMessenger:(NSObject<FlutterBinaryMessenger> *)messenger {
     
     NSString *methodName = [NSString stringWithFormat:@"com.ahd.TTSplashView_%lld", viewId];
     _channel = [FlutterMethodChannel methodChannelWithName:methodName binaryMessenger:messenger];
     
-    splashView = splash_view;
+//    splashView = splash_view;
     
     if (!splashView) {
         isPreLoad = false;
@@ -78,9 +78,9 @@
 
 - (void)removeView {
     [NSThread sleepForTimeInterval:0.5];
-    [self->container removeFromSuperview];
-    [self->splashView removeFromSuperview];
-    self->splashView = nil;
+//    [self->container removeFromSuperview];
+    splashView.delegate = nil;
+    [splashView removeFromSuperview];
 }
 
 - (nonnull UIView *)view {
@@ -123,11 +123,13 @@
 - (void)splashAdDidClick:(BUSplashAdView *)splashAd {
     NSLog(@"开屏广告点击");
     [_channel invokeMethod:@"click" arguments:@""];
+    [self removeView];
 }
 
 - (void)splashAdDidClickSkip:(BUSplashAdView *)splashAd {
     NSLog(@"开屏广告跳过");
     [_channel invokeMethod:@"skip" arguments:@""];
+    [self removeView];
 }
 
 - (void)splashAdCountdownToZero:(BUSplashAdView *)splashAd {

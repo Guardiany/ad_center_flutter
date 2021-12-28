@@ -85,6 +85,7 @@
 }
 
 - (void)initPangolin {
+    NSLog(@"穿山甲sdk版本：%@", BUAdSDKManager.SDKVersion);
     [BUAdSDKManager setAppID:pangolinAppId];
     [BUAdSDKManager startWithAsyncCompletionHandler:^(BOOL success, NSError *error) {
         if (success) {
@@ -92,7 +93,7 @@
             NSDictionary *result = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
             self->flutterResult(result);
         } else {
-            NSLog(@"%@", @"开始初始化广告SDK");
+            NSLog(@"%@", @"穿山甲广告SDK初始化失败");
             NSDictionary *result = [[NSDictionary alloc] initWithObjectsAndKeys:@"error", @"result", error.description, @"message", nil];
             self->flutterResult(result);
         }
@@ -471,11 +472,6 @@
 
 - (void)gdt_rewardVideoAdDidClose:(GDTRewardVideoAd *)rewardedVideoAd {
     [self displaySuccess:3];
-}
-
-#pragma mark - 开屏广告
-- (void)preLoadSplashAd:(NSString*)codeId result:(FlutterResult)result {
-    
 }
 
 @end

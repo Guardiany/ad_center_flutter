@@ -10,7 +10,6 @@
 
 @implementation PangolinSplashViewFactory{
     NSObject<FlutterBinaryMessenger> *_messenger;
-    PangolinSplashView *splashView;
 }
 
 - (instancetype)initWithMessenger:(NSObject<FlutterBinaryMessenger> *)messager {
@@ -26,17 +25,8 @@
     return [FlutterStandardMessageCodec sharedInstance];
 }
 
-- (void)setSplashView:(PangolinSplashView*)splash_view {
-    splashView = splash_view;
-}
-
 - (nonnull NSObject<FlutterPlatformView> *)createWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id _Nullable)args {
-    PangolinSplashView *spView = nil;
-    if (splashView) {
-        spView = [splashView initWithFrame:frame viewIdentifier:viewId arguments:args binaryMessenger:_messenger splashView:[splashView getSplashView]];
-    } else {
-        spView = [[PangolinSplashView alloc] initWithFrame:frame viewIdentifier:viewId arguments:args binaryMessenger:_messenger splashView:nil];
-    }
+    PangolinSplashView *spView = [[PangolinSplashView alloc] initWithFrame:frame viewIdentifier:viewId arguments:args binaryMessenger:_messenger];
     return spView;
 }
 

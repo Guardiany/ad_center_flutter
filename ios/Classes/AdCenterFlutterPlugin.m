@@ -3,8 +3,8 @@
 #import "PangolinSplashViewFactory.h"
 #import "PangolinBannerViewFactory.h"
 #import "PangolinSplashView.h"
-
-PangolinSplashViewFactory *splashViewFactory;
+#import "PangolinSplashViewFactory.h"
+#import "PangolinNativeAdFactory.h"
 
 @implementation AdCenterFlutterPlugin {
     AdCenter *adCenter;
@@ -16,9 +16,9 @@ PangolinSplashViewFactory *splashViewFactory;
             binaryMessenger:[registrar messenger]];
   AdCenterFlutterPlugin* instance = [[AdCenterFlutterPlugin alloc] init];
   [registrar addMethodCallDelegate:instance channel:channel];
-    splashViewFactory = [[PangolinSplashViewFactory alloc] initWithMessenger:registrar.messenger];
-    [registrar registerViewFactory: splashViewFactory withId:@"com.ahd.TTSplashView"];
+    [registrar registerViewFactory: [[PangolinSplashViewFactory alloc] initWithMessenger:registrar.messenger] withId:@"com.ahd.TTSplashView"];
     [registrar registerViewFactory:[[PangolinBannerViewFactory alloc] initWithMessenger:registrar] withId:@"com.ahd.TTBannerView"];
+    [registrar registerViewFactory:[[PangolinNativeAdFactory alloc] initWithMessenger:registrar] withId:@"com.ahd.TTNativeView"];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -29,12 +29,14 @@ PangolinSplashViewFactory *splashViewFactory;
       [self initAdCenter:call result:result];
   }
   else if ([@"preLoadSplash" isEqualToString:call.method]) {
-      NSDictionary *dic = call.arguments;
-      NSString *iosCodeId = [dic valueForKey:@"iosCodeId"];
-      PangolinSplashView *splashView = [[PangolinSplashView alloc] init];
-      [splashView preLoadSplash:iosCodeId result:result didLoad:^{
-          [splashViewFactory setSplashView:splashView];
-      }];
+//      NSDictionary *dic = call.arguments;
+//      NSString *iosCodeId = [dic valueForKey:@"iosCodeId"];
+//      splashView = [[PangolinSplashView alloc] init];
+//      [splashView preLoadSplash:iosCodeId result:result didLoad:^{
+//
+//      }];
+      NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
+      result(resultDic);
   }
   else if ([@"display" isEqualToString:call.method]) {
       if (adCenter) {
