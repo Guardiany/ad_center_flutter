@@ -15,6 +15,7 @@
 @implementation PangolinNativeAdView {
     int64_t _viewId;
     BUNativeExpressAdManager *adManager;
+    BUNativeExpressAdView *nativeAdView;
     UIWindow *container;
     FlutterMethodChannel *_channel;
     int adX;
@@ -85,9 +86,8 @@
         [views enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             BUNativeExpressAdView *expressView = (BUNativeExpressAdView *)obj;
             expressView.rootViewController = container.rootViewController;
-            CGRect rect = [[UIScreen mainScreen] bounds];
-            CGSize size = rect.size;
             expressView.frame = CGRectMake(adX, adY, adWidth, adHeight);
+            expressView.backgroundColor = [UIColor whiteColor];
             [expressView render];
         }];
     }
@@ -95,7 +95,16 @@
 
 //渲染成功
 - (void)nativeExpressAdViewRenderSuccess:(BUNativeExpressAdView *)nativeExpressAdView {
+    nativeAdView = nativeExpressAdView;
     [container.rootViewController.view addSubview:nativeExpressAdView];
+}
+
+- (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
+    if ([@"dispose" isEqualToString:call.method]) {
+        if (nativeAdView) {
+            [nativeAdView removeFromSuperview];
+        }
+    }
 }
 
 + (void)registerWithRegistrar:(nonnull NSObject<FlutterPluginRegistrar> *)registrar {

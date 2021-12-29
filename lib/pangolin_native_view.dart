@@ -39,6 +39,7 @@ class _PangolinNativeViewState extends State<PangolinNativeView> {
         viewType: _viewType,
         creationParams: {
           'androidCodeId': widget.androidCodeId,
+          'iosCodeId': widget.iosCodeId,
           'width': widget.width,
           'height': widget.height,
           'positionX': widget.positionX,
@@ -51,6 +52,7 @@ class _PangolinNativeViewState extends State<PangolinNativeView> {
       return UiKitView(
         viewType: _viewType,
         creationParams: {
+          'androidCodeId': widget.androidCodeId,
           'iosCodeId': widget.iosCodeId,
           'width': widget.width,
           'height': widget.height,
@@ -72,5 +74,13 @@ class _PangolinNativeViewState extends State<PangolinNativeView> {
   ///监听原生view传值
   Future<dynamic> _platformCallHandler(MethodCall call) async {
 
+  }
+
+  @override
+  void dispose() {
+    if (_channel != null && Platform.isIOS) {
+      _channel?.invokeMethod('dispose');
+    }
+    super.dispose();
   }
 }

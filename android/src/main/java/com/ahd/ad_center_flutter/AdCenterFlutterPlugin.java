@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 
 import com.ahd.ad_center_flutter.Ads.TTAd.TTAdCenter;
 import com.ahd.ad_center_flutter.Ads.TTAd.TTBannerViewFactory;
+import com.ahd.ad_center_flutter.Ads.TTAd.TTNativeAdViewFactory;
 import com.ahd.ad_center_flutter.Ads.TTAd.TTSplashAdViewFactory;
 import com.ahd.ad_center_flutter.OpenListener.PlayAdListener;
 
@@ -34,6 +35,8 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "ad_center_flutter");
     channel.setMethodCallHandler(this);
+    flutterPluginBinding.getPlatformViewRegistry().registerViewFactory(
+            "com.ahd.TTNativeView", new TTNativeAdViewFactory(flutterPluginBinding.getBinaryMessenger()));
     flutterPluginBinding.getPlatformViewRegistry().registerViewFactory(
             "com.ahd.TTSplashView", new TTSplashAdViewFactory(flutterPluginBinding.getBinaryMessenger()));
     flutterPluginBinding.getPlatformViewRegistry().registerViewFactory(
