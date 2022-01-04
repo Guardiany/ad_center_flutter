@@ -7,7 +7,7 @@ package com.ahd.ad_center_flutter.OpenListener;
  * Used for
  */
 public interface PlayAdListener {
-    void onSuccess();
+    void onSuccess(boolean isClick);
     //-1, "数据故障，请重启应用～～
     //-2, "请检查网络是否正常，恢复正常后重试～～
     //-3, "您播放的太快哦，慢慢来～～

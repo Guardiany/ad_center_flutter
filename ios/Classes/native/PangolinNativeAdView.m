@@ -22,15 +22,14 @@
     int adY;
     int adWidth;
     int adHeight;
+    bool isDispose;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args binaryMessenger:(NSObject<FlutterPluginRegistrar> *)messenger {
+    isDispose = false;
     NSString *methodName = [NSString stringWithFormat:@"com.ahd.TTNativeView_%lld", viewId];
     _channel = [FlutterMethodChannel methodChannelWithName:methodName binaryMessenger:messenger.messenger];
     [messenger addMethodCallDelegate:self channel:_channel];
-    
-    container = [[UIWindow alloc] initWithFrame:frame];
-    container.rootViewController = [[UIApplication sharedApplication] keyWindow].rootViewController;
     
     NSDictionary *dic = args;
     NSString *codeId = dic[@"iosCodeId"];
@@ -43,6 +42,9 @@
     adY = [yStr intValue];
     adWidth = [widthStr intValue];
     adHeight = [heightStr intValue];
+    
+    container = [[UIWindow alloc] initWithFrame:frame];
+    container.rootViewController = [[UIApplication sharedApplication] keyWindow].rootViewController;
     
     NSValue *sizeValue = [NSValue valueWithCGSize:CGSizeMake(adWidth, adHeight)];
     CGSize size = [sizeValue CGSizeValue];
@@ -96,11 +98,14 @@
 //渲染成功
 - (void)nativeExpressAdViewRenderSuccess:(BUNativeExpressAdView *)nativeExpressAdView {
     nativeAdView = nativeExpressAdView;
-    [container.rootViewController.view addSubview:nativeExpressAdView];
+    if (!isDispose) {
+        [container.rootViewController.view addSubview:nativeExpressAdView];
+    }
 }
 
 - (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
     if ([@"dispose" isEqualToString:call.method]) {
+        isDispose = true;
         if (nativeAdView) {
             [nativeAdView removeFromSuperview];
         }

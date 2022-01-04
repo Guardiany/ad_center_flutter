@@ -13,6 +13,7 @@ class PangolinNativeView extends StatefulWidget {
     required this.height,
     required this.positionX,
     required this.positionY,
+    required this.adType,
   }) : super(key: key);
 
   final String androidCodeId;
@@ -21,6 +22,7 @@ class PangolinNativeView extends StatefulWidget {
   final double? height;
   final double? positionX;
   final double? positionY;
+  final int adType;
 
   @override
   _PangolinNativeViewState createState() => _PangolinNativeViewState();
@@ -44,6 +46,7 @@ class _PangolinNativeViewState extends State<PangolinNativeView> {
           'height': widget.height,
           'positionX': widget.positionX,
           'positionY': widget.positionY,
+          'adType': widget.adType,
         },
         onPlatformViewCreated: _registerChannel,
         creationParamsCodec: const StandardMessageCodec(),
@@ -58,6 +61,7 @@ class _PangolinNativeViewState extends State<PangolinNativeView> {
           'height': widget.height,
           'positionX': widget.positionX,
           'positionY': widget.positionY,
+          'adType': widget.adType,
         },
         onPlatformViewCreated: _registerChannel,
         creationParamsCodec: const StandardMessageCodec(),

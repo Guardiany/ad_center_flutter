@@ -40,16 +40,16 @@ public class AdCenter {
     public String  currentSource = "0";
     public boolean mNeedPreLoad = false;
     //APP名称
-    public static String APPNAME = "夕阳红";
+    public static String APPNAME = "";
     //穿山甲
-    public static String TOUTIAOCATID = "5188306";
-    public static String JILICATID = "946306237";
+    public static String TOUTIAOCATID = "";
+    public static String JILICATID = "";
     //快手联盟
-    public static String KUAISHOUCATID = "561000009";
-    public static String KUAISHOUPOSID = "5610000009";
+    public static String KUAISHOUCATID = "";
+    public static String KUAISHOUPOSID = "";
     //优量汇广告
-    public static String APPCATID = "1111943439";
-    public static String EDITPOSID = "7092501339756510";
+    public static String APPCATID = "";
+    public static String EDITPOSID = "";
 
     public static final int TTAD = 1, KSAD = 2, YLHAD = 3;
     public static boolean TTInitOK = false, KSInitOK = false, YLHInitOK = false;
@@ -65,6 +65,7 @@ public class AdCenter {
     private PlayAdListener mPlayAdListener;
     private Activity mActivity;
     private MethodChannel.Result result;
+    private boolean isAdClick = false;
 
     private long tolerateTime = 1000 * 60 * 3;
 
@@ -374,7 +375,7 @@ public class AdCenter {
             @Override
             public void onDisplaySuccess(int adFlag) {
                 LogTools.printLog(this.getClass(), "播放" + getAdName(adFlag) + "广告成功");
-                mPlayAdListener.onSuccess();
+                mPlayAdListener.onSuccess(isAdClick);
                 updateShowInfo(adFlag, 1,false);
             }
 
@@ -389,6 +390,11 @@ public class AdCenter {
                 adCenter.preLoadAd();
                 updateShowInfo(adFlag, 0,true);
                 //adCenter.getAdFromNet(true);
+            }
+
+            @Override
+            public void onAdClick() {
+                isAdClick = true;
             }
         };
     }
@@ -414,6 +420,7 @@ public class AdCenter {
     }
 
     public void displayAd(String source,PlayAdListener playAdListener) {
+        isAdClick = false;
         this.currentSource = source;
         if (ClickTools.isFastClick()) {
             LogTools.printLog(this.getClass(), "重复点击");

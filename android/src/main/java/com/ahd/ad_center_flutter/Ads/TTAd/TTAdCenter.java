@@ -6,7 +6,6 @@ import static com.bytedance.sdk.openadsdk.TTAdLoadType.PRELOAD;
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
-import android.view.View;
 
 import com.ahd.ad_center_flutter.AdCenter;
 import com.ahd.ad_center_flutter.Ads.AdFather;
@@ -20,10 +19,12 @@ import com.bytedance.sdk.openadsdk.TTAdConstant;
 import com.bytedance.sdk.openadsdk.TTAdManager;
 import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTAdSdk;
+import com.bytedance.sdk.openadsdk.TTNativeExpressAd;
 import com.bytedance.sdk.openadsdk.TTRewardVideoAd;
 import com.bytedance.sdk.openadsdk.TTSplashAd;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -41,14 +42,15 @@ public class TTAdCenter implements AdFather {
     private static boolean isStart = false;
     private static boolean isDisPlaying = false;
     private TTAdManager ttAdManager;
-    private TTAdNative mTTAdNative;
     private TTRewardVideoAd onlindAd;
-    private AdSlot adSlot;
     private AdInitListener mAdInitLister;
     private AdPreLoadListener mAdPreLoadListener;
     private AdDisplayListener mAdDisplayListener;
     private Activity mContext;
     private TTSplashAd ttSplashAd;
+    private TTNativeExpressAd ttNativeExpressHalfAd;
+    private TTNativeExpressAd ttNativeExpressFullAd;
+    private TTNativeExpressAd ttNativeBannerAd;
     //头条ID
     private String ksId;
     //快手激励广告ID
@@ -70,12 +72,24 @@ public class TTAdCenter implements AdFather {
         return ttSplashAd;
     }
 
+    public TTNativeExpressAd getTtNativeExpressHalfAd() {
+        return ttNativeExpressHalfAd;
+    }
+
+    public TTNativeExpressAd getTtNativeExpressFullAd() {
+        return ttNativeExpressFullAd;
+    }
+
+    public TTNativeExpressAd getTtNativeBannerAd() {
+        return ttNativeBannerAd;
+    }
+
     @Override
     public void initSDK(Activity appContext, String appName, String adId, String encourageId, AdInitListener initListener) {
         this.mContext = appContext;
         this.encourageId = encourageId;
         this.mAdInitLister = initListener;
-        TTAdSdk.init(appContext, buildConfig(appContext, adId), new TTAdSdk.InitCallback() {
+        TTAdSdk.init(appContext, buildConfig(adId), new TTAdSdk.InitCallback() {
             @Override
             public void success() {
                 Log.i("TTAdCenter-->", "success: ");
@@ -92,12 +106,12 @@ public class TTAdCenter implements AdFather {
         });
     }
 
-    private static TTAdConfig buildConfig(Context context, String ttId) {
+    private static TTAdConfig buildConfig(String ttId) {
         return new TTAdConfig.Builder()
                 .appId(ttId)
                 .useTextureView(true) //使用TextureView控件播放视频,默认为SurfaceView,当有SurfaceView冲突的场景，可以使用TextureView
                 .allowShowNotify(true) //是否允许sdk展示通知栏提示
-                .allowShowPageWhenScreenLock(true) // 锁屏下穿山甲SDK不会再出落地页，此API已废弃，调用没有任何效果
+//                .allowShowPageWhenScreenLock(true) // 锁屏下穿山甲SDK不会再出落地页，此API已废弃，调用没有任何效果
                 .debug(true) //测试阶段打开，可以通过日志排查问题，上线时去除该调用
                 .directDownloadNetworkType(TTAdConstant.NETWORK_STATE_WIFI, TTAdConstant.NETWORK_STATE_3G, TTAdConstant.NETWORK_STATE_4G) //允许直接下载的网络状态集合
                 .supportMultiProcess(true)//是否支持多进程
@@ -157,6 +171,62 @@ public class TTAdCenter implements AdFather {
         }, 3000);
     }
 
+    public void preLoadBannerAdView(String codeId, float width, float height) {
+        TTAdNative mTTAdNative = TTAdSdk.getAdManager().createAdNative(mContext);
+        AdSlot adSlot = new AdSlot.Builder()
+                .setCodeId(codeId) //广告位id
+                .setSupportDeepLink(true)
+                .setAdCount(1) //请求广告数量为1到3条
+                .setExpressViewAcceptedSize(width,height) //期望模板广告view的size,单位dp
+                .setAdLoadType(LOAD)//推荐使用，用于标注此次的广告请求用途为预加载（当做缓存）还是实时加载，方便后续为开发者优化相关策略
+                .build();
+        mTTAdNative.loadBannerExpressAd(adSlot, new TTAdNative.NativeExpressAdListener() {
+            @Override
+            public void onError(int i, String s) {
+                LogTools.printLog(this.getClass(), "Banner广告预加载失败："+s);
+            }
+
+            @Override
+            public void onNativeExpressAdLoad(List<TTNativeExpressAd> list) {
+                if (!list.isEmpty()) {
+                    TTAdCenter.this.ttNativeBannerAd = list.get(0);
+                }
+            }
+        });
+    }
+
+    public void preLoadNativeAdView(String codeId, float adWidth, float adHeight, final int type) {
+        if(!isInit) {
+            return;
+        }
+        ttAdManager = TTAdSdk.getAdManager();
+        TTAdNative mTTAdNative = ttAdManager.createAdNative(mContext);
+        AdSlot adSlot = new AdSlot.Builder()
+                .setCodeId(codeId) //广告位id
+                .setSupportDeepLink(true)
+                .setAdCount(1) //请求广告数量为1到3条
+                .setExpressViewAcceptedSize(adWidth,adHeight) //期望模板广告view的size,单位dp
+                .setAdLoadType(PRELOAD)//推荐使用，用于标注此次的广告请求用途为预加载（当做缓存）还是实时加载，方便后续为开发者优化相关策略
+                .build();
+        mTTAdNative.loadNativeExpressAd(adSlot, new TTAdNative.NativeExpressAdListener() {
+            @Override
+            public void onError(int i, String s) {
+                LogTools.printLog(this.getClass(), "信息流广告预加载失败："+s);
+            }
+
+            @Override
+            public void onNativeExpressAdLoad(List<TTNativeExpressAd> list) {
+                if (!list.isEmpty()) {
+                    if (type == 0) {
+                        TTAdCenter.this.ttNativeExpressHalfAd = list.get(0);
+                    } else {
+                        TTAdCenter.this.ttNativeExpressFullAd = list.get(0);
+                    }
+                }
+            }
+        });
+    }
+
     private void sendResult(final Map<String, Object> resultMap, final MethodChannel.Result result) {
         mContext.runOnUiThread(new Runnable() {
             @Override
@@ -175,9 +245,12 @@ public class TTAdCenter implements AdFather {
             return;
         }
         ttAdManager = TTAdSdk.getAdManager();
-        mTTAdNative = ttAdManager.createAdNative(mContext);
+        TTAdNative mTTAdNative = ttAdManager.createAdNative(mContext);
         //step4:创建广告请求参数AdSlot,具体参数含义参考文档
-        adSlot = new AdSlot.Builder()
+        //模板广告需要设置期望个性化模板广告的大小,单位dp,激励视频场景，只要设置的值大于0即可
+        //        且仅是模板渲染的代码位ID使用，非模板渲染代码位切勿使用
+        //必填参数，期望视频的播放方向：TTAdConstant.HORIZONTAL 或 TTAdConstant.VERTICAL
+        AdSlot adSlot = new AdSlot.Builder()
                 .setCodeId(encourageId)
                 //模板广告需要设置期望个性化模板广告的大小,单位dp,激励视频场景，只要设置的值大于0即可
 //        且仅是模板渲染的代码位ID使用，非模板渲染代码位切勿使用
@@ -239,6 +312,7 @@ public class TTAdCenter implements AdFather {
             @Override
             public void onAdVideoBarClick() {
                 Log.d("TAG", "Callback --> rewardVideoAd bar click");
+                mAdDisplayListener.onAdClick();
             }
 
             //视频关闭回调

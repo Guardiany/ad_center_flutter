@@ -15,4 +15,6 @@ public interface AdDisplayListener {
     void onDisplaySuccess(int adFlag);
     //播放失败
     void onDisplayFailed(int adFlag, int error, String errorMessage);
+    //广告点击
+    void onAdClick();
 }

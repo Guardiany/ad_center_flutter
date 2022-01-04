@@ -115,6 +115,7 @@ public class KsAdCenter implements AdFather {
                 @Override
                 public void onAdClicked() {
                     LogTools.printLog(this.getClass(), "快手播放监听器:onAdClicked");
+                    mAdDisplayListener.onAdClick();
                 }
 
                 @Override

@@ -135,7 +135,7 @@ AdCenterFlutter.initAdCenter(
 ```Dart
 AdCenterFlutter.displayAd(
       functionId: '1.签到',
-      onSuccess: () {
+      onSuccess: (bool isAdClick) {
         print('播放成功');
       },
       onError: (error) {
@@ -170,11 +170,20 @@ Widget build(BuildContext context) {
 
 #### 4、Banner广告
 ```Dart
+///预加载banner广告
+AdCenterFlutter.preLoadBannerAd(
+  androidCodeId: 'androidCodeId',
+  iosCodeId: 'iosCodeId',
+  width: width,
+  height: height,
+);
+
 ///显示Banner广告
 @override
 Widget build(BuildContext context) {
   return AdCenterFlutter.pangolinBannerView(
-    androidCodeId: _pangolinBannerAndroidId,
+    androidCodeId: 'androidCodeId',
+    iosCodeId: 'iosCodeId',
     callBack: callBack,
     width: width,
     height: height,
@@ -184,6 +193,17 @@ Widget build(BuildContext context) {
 
 #### 5、信息流广告
 ```Dart
+///预加载信息流广告
+AdCenterFlutter.preLoadPangolinNativeAd(
+  androidCodeId: 'androidCode',
+  iosCodeId: 'iosCode',
+  positionX: positionX,
+  positionY: positionY,
+  width: width,
+  height: height,
+  adType: type,/// 0: 半屏   1: 全屏
+);
+
 ///显示信息流广告
 @override
 Widget build(BuildContext context) {
@@ -194,6 +214,7 @@ Widget build(BuildContext context) {
     positionY: positionY,
     width: width,
     height: height,
+    adType: type,/// 0: 半屏   1: 全屏
   );
 }
 ```

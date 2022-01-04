@@ -103,6 +103,7 @@ public class YlhAdCenter implements AdFather {
             @Override
             public void onADClick() {
                 LogTools.printLog(this.getClass(), "优量汇onADClick");
+                mAdDisplayListener.onAdClick();
             }
 
             @Override

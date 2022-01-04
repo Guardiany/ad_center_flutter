@@ -58,6 +58,14 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
       case "preLoadSplash":
         preLoadSplash(call, result);
         break;
+      case "preLoadNative":
+        preLoadNative(call);
+        result.success(true);
+        break;
+      case "preLoadBanner":
+        preLoadBanner(call);
+        result.success(true);
+        break;
       case "destroy":
         AdCenter.getInstance().onDestroy();
         result.success(true);
@@ -97,6 +105,41 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
     TTAdCenter.getInstance().preLoadSplashAd(codeId, result);
   }
 
+  private void preLoadBanner(MethodCall call) {
+    String codeId = call.argument("androidCodeId");
+    Double width = (Double) call.argument("width");
+    Double height = (Double) call.argument("height");
+    float fWidth = 640;
+    float fHeight = 70;
+    if (width != null) {
+      fWidth = width.floatValue();
+    }
+    if (height != null) {
+      fHeight = height.floatValue();
+    }
+    TTAdCenter.getInstance().preLoadBannerAdView(codeId, fWidth, fHeight);
+  }
+
+  private void preLoadNative(MethodCall call) {
+    String codeId = call.argument("androidCodeId");
+    Double width = (Double) call.argument("width");
+    Double height = (Double) call.argument("height");
+    Integer adType = call.argument("adType");
+    float fWidth = 640;
+    float fHeight = 70;
+    if (width != null) {
+      fWidth = width.floatValue();
+    }
+    if (height != null) {
+      fHeight = height.floatValue();
+    }
+    int type = 0;
+    if (adType != null) {
+      type = adType;
+    }
+    TTAdCenter.getInstance().preLoadNativeAdView(codeId, fWidth, fHeight, type);
+  }
+
   private boolean isResultUsed = false;
 
   private void displayAd(MethodCall call, final Result result) {
@@ -104,7 +147,7 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
     String functionId = call.argument("functionId");
     AdCenter.getInstance().displayAd(functionId, new PlayAdListener() {
       @Override
-      public void onSuccess() {
+      public void onSuccess(final boolean isClick) {
         Log.e("onSuccess:", "广告播放成功");
         activity.runOnUiThread(new Runnable() {
           @Override
@@ -115,6 +158,7 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
             Map<String, Object> resultMap = new HashMap<>();
             resultMap.put("result", "success");
             resultMap.put("message", "广告播放成功");
+            resultMap.put("adClick", isClick);
             result.success(resultMap);
             isResultUsed = true;
           }

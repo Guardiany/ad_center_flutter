@@ -34,6 +34,7 @@
     int nextAd;
     BOOL todayPlayOver;
     BOOL preLoadCurrentSuccess;
+    BOOL isAdClick;
     NSString *currentSource;
     long lastClickTime;
     int TTFailedTime;
@@ -163,6 +164,7 @@
 }
 
 - (void)displayAd:(NSString*)source result:(FlutterResult)result {
+    isAdClick = false;
     currentSource = source;
     flutterResult = result;
     if ([self isFastClick]) {
@@ -215,7 +217,7 @@
 - (void)displaySuccess: (int)adType {
     NSLog(@"播放%@广告成功", [self getAdName:adType]);
     [self updateShowInfo:1 adType:adType];
-    NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"播放广告成功", @"message", nil];
+    NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"播放广告成功", @"message", [NSNumber numberWithBool:isAdClick], @"adClick", nil];
     flutterResult(resultDic);
 }
 
@@ -380,6 +382,11 @@
     }
 }
 
+- (void)nativeExpressRewardedVideoAdDidClick:(BUNativeExpressRewardedVideoAd *)rewardedVideoAd {
+    isAdClick = true;
+    NSLog(@"头条广告点击");
+}
+
 #pragma mark - 快手广告
 
 - (void)displayKsAd:(FlutterResult)result {
@@ -428,6 +435,11 @@
     }
 }
 
+- (void)rewardedVideoAdDidClick:(KSRewardedVideoAd *)rewardedVideoAd {
+    isAdClick = true;
+    NSLog(@"快手广告点击");
+}
+
 #pragma mark - 优量汇广告
 
 - (void)displayTencentAd:(FlutterResult)result {
@@ -472,6 +484,11 @@
 
 - (void)gdt_rewardVideoAdDidClose:(GDTRewardVideoAd *)rewardedVideoAd {
     [self displaySuccess:3];
+}
+
+- (void)gdt_rewardVideoAdDidClicked:(GDTRewardVideoAd *)rewardedVideoAd {
+    isAdClick = true;
+    NSLog(@"优量汇广告点击");
 }
 
 @end
