@@ -74,6 +74,14 @@
 -keep class com.squareup.okhttp3.** { *;}
 -dontwarn okio.**
 
+-keep class org.chromium.** {*;}
+-keep class org.chromium.** { *; }
+-keep class aegon.chrome.** { *; }
+-keep class com.kwai.**{ *; }
+-dontwarn com.kwai.**
+-dontwarn com.kwad.**
+-dontwarn com.ksad.**
+-dontwarn aegon.chrome.**
 
 ##---------------Begin: proguard configuration for Gson  ----------
 # Gson uses generic type information stored in a class file when working with fields. Proguard
