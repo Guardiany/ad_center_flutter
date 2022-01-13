@@ -5,13 +5,23 @@
 
 ## 官方文档
 * 穿山甲
+
 [Android](https://www.pangle.cn/union/media/union/download/detail?id=4&docId=5de8d9b3b1afac0012933105&osType=android)
+
 [IOS](https://www.pangle.cn/union/media/union/download/detail?id=16&osType=ios)
+
+
 * 优量汇
+
 [Android](https://developers.adnet.qq.com/doc/android/access_doc)
+
 [IOS](https://developers.adnet.qq.com/doc/ios/guide)
+
+
 * 快手
+
 [Android](https://static.yximgs.com/udata/pkg/KS-Android-KSAdSDk/doc/Android-AdSDK-3316.pdf)
+
 [IOS](https://static.yximgs.com/udata/pkg/KSAdSDKTarGz/doc/ksadsdk-iOS-readme-ad-3.3.16.pdf)
 
 ## 集成步骤
@@ -90,6 +100,39 @@ AndroidManifest.xml里面添加：
           android:resource="@xml/gdt_file_path" />
 </provider>
 ```
+gdt_file_path.xml
+```Xml
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <external-cache-path
+        name="gdt_sdk_download_path1"
+        path="com_qq_e_download" />
+    <cache-path
+        name="gdt_sdk_download_path2"
+        path="com_qq_e_download" />
+</paths>
+```
+
+file_paths.xml
+```Xml
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--为了适配所有路径可以设置 path = "." -->
+    <external-path name="tt_external_root" path="." />
+    <external-path name="tt_external_download" path="Download" />
+    <external-files-path name="tt_external_files_download" path="Download" />
+    <files-path name="tt_internal_file_download" path="Download" />
+    <cache-path name="tt_internal_cache_download" path="Download" />
+
+    <external-path path="Android/data/com.ahd.ahd_fun_camera/" name="files_root" />
+    <external-path path="." name="external_storage_root" />
+    <paths>
+        <external-path path="Android/data/packagename/" name="files_root" />
+        <external-path path="." name="external_storage_root" />
+    </paths>
+</paths>
+```
+
 请解压提供的⼴告SDK，在压缩包中找到kssdk-ad--3.3.15-publishRelease-4533d8764.aar
 
 找到您的App⼯程下的libs⽂件夹，将上⾯的aar拷⻉到该⽬录下
