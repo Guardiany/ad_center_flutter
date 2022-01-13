@@ -5,6 +5,7 @@
 #import "PangolinSplashView.h"
 #import "PangolinSplashViewFactory.h"
 #import "PangolinNativeAdFactory.h"
+#import "AdPreLoadManager.h"
 
 @implementation AdCenterFlutterPlugin {
     AdCenter *adCenter;
@@ -31,9 +32,12 @@
   else if ([@"preLoadSplash" isEqualToString:call.method]) {
 //      NSDictionary *dic = call.arguments;
 //      NSString *iosCodeId = [dic valueForKey:@"iosCodeId"];
-//      splashView = [[PangolinSplashView alloc] init];
-//      [splashView preLoadSplash:iosCodeId result:result didLoad:^{
-//
+//      [[AdPreLoadManager instance] preLoadSplash:iosCodeId loadSuccess:^{
+//          NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
+//          result(resultDic);
+//      } loadError:^{
+//          NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"error", @"result", @"开屏广告预加载失败", @"message", nil];
+//          result(resultDic);
 //      }];
       NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
       result(resultDic);
@@ -43,6 +47,23 @@
           NSDictionary *dic = call.arguments;
           NSString *functionId = [dic valueForKey:@"functionId"];
           [adCenter displayAd:functionId result:result];
+      } else {
+          result([NSNumber numberWithBool:false]);
+      }
+  }
+  else if ([@"preLoadBanner" isEqualToString:call.method]) {
+//      [[AdPreLoadManager instance] preLoadBanner:call.arguments];
+      result([NSNumber numberWithBool:true]);
+  }
+  else if ([@"preLoadNative" isEqualToString:call.method]) {
+//      [[AdPreLoadManager instance] preLoadNative:call.arguments];
+      result([NSNumber numberWithBool:true]);
+  }
+  else if ([@"setUserId" isEqualToString:call.method]) {
+      if (adCenter) {
+          NSString *userId = [call.arguments valueForKey:@"userId"];
+          [adCenter setUserId:userId];
+          result([NSNumber numberWithBool:true]);
       } else {
           result([NSNumber numberWithBool:false]);
       }

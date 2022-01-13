@@ -7,10 +7,9 @@
 
 #import <Foundation/Foundation.h>
 #import "PangolinSplashView.h"
+#import "AdPreLoadManager.h"
 
 @interface PangolinSplashView () <BUSplashAdDelegate>
-
-@property (nonatomic, copy) loadSuccess loadBlock;
 
 @end
 
@@ -32,25 +31,25 @@
     NSString *methodName = [NSString stringWithFormat:@"com.ahd.TTSplashView_%lld", viewId];
     _channel = [FlutterMethodChannel methodChannelWithName:methodName binaryMessenger:messenger];
     
-//    splashView = splash_view;
     
-    if (!splashView) {
+    container = [[UIWindow alloc] initWithFrame:frame];
+    container.rootViewController = [[UIApplication sharedApplication] keyWindow].rootViewController;
+    
+    splashView = [[AdPreLoadManager instance] getSplashView];
+    
+    if (splashView == nil) {
         isPreLoad = false;
-        container = [[UIWindow alloc] initWithFrame:frame];
-        container.rootViewController = [[UIApplication sharedApplication] keyWindow].rootViewController;
         NSDictionary *dic = args;
         NSString *codeId = dic[@"iosCodeId"];
         [self configSplash: codeId];
     } else {
+        isPreLoad = true;
+        splashView.delegate = self;
         [container.rootViewController.view addSubview:splashView];
     }
 
     _viewId = viewId;
     return self;
-}
-
-- (BUSplashAdView*)getSplashView {
-    return splashView;
 }
 
 - (void)configSplash: (NSString*)codeId{
@@ -62,25 +61,10 @@
     [splashView loadAdData];
 }
 
-- (void)preLoadSplash: (NSString*)codeId result:(FlutterResult)result didLoad:(loadSuccess)didLoad {
-    self.loadBlock = didLoad;
-    isPreLoad = true;
-    rootResult = result;
-    CGRect frame = [UIScreen mainScreen].bounds;
-    splashView = [[BUSplashAdView alloc] initWithSlotID:codeId frame:frame];
-    splashView.tolerateTimeout = 10;
-    splashView.delegate = self;
-    container = [[UIWindow alloc] initWithFrame:frame];
-    container.rootViewController = [[UIApplication sharedApplication] keyWindow].rootViewController;
-    splashView.rootViewController = container.rootViewController;
-    [splashView loadAdData];
-}
-
 - (void)removeView {
     [NSThread sleepForTimeInterval:0.5];
-//    [self->container removeFromSuperview];
-    splashView.delegate = nil;
     [splashView removeFromSuperview];
+//    splashView = nil;
 }
 
 - (nonnull UIView *)view {
@@ -92,9 +76,6 @@
     if (!isPreLoad) {
         [container.rootViewController.view addSubview:splashAd];
     } else {
-        if (self.loadBlock) {
-            self.loadBlock();
-        }
         NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
         if (rootResult) {
             rootResult(resultDic);
@@ -123,7 +104,6 @@
 - (void)splashAdDidClick:(BUSplashAdView *)splashAd {
     NSLog(@"开屏广告点击");
     [_channel invokeMethod:@"click" arguments:@""];
-    [self removeView];
 }
 
 - (void)splashAdDidClickSkip:(BUSplashAdView *)splashAd {
@@ -140,11 +120,11 @@
 
 - (void)splashAdDidClose:(BUSplashAdView *)splashAd {
     NSLog(@"开屏广告关闭");
-    [self removeView];
 }
 
 - (void)splashAdDidCloseOtherController:(BUSplashAdView *)splashAd interactionType:(BUInteractionType)interactionType {
     NSLog(@"开屏广告关闭其他Controller");
+    [_channel invokeMethod:@"finish" arguments:@""];
     [self removeView];
 }
 

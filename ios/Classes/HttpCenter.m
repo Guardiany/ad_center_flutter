@@ -23,6 +23,10 @@
     return self;
 }
 
+- (void)setUserId:(NSString*)uId {
+    userId = uId;
+}
+
 - (void)getNextAdFromWeb: (void (^)(NSDictionary *result))completionHandler {
     NSString *urlStr = [NSString stringWithFormat:@"https://adv.ahd168.com/adv/video/videoNumber?appId=%@&userId=%@&jumpId=0", appId, userId];
     NSURL *url = [NSURL URLWithString:urlStr];
@@ -32,7 +36,7 @@
     NSURLSession *session = [NSURLSession sharedSession];
     NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         NSString *resultStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        NSLog(@"服务器返回：%@", resultStr);
+        NSLog(@"广告服务器返回：%@", resultStr);
 //        dispatch_async(dispatch_get_main_queue(), ^{
 //            [[JSToastDialogs shareInstance] makeToast:resultStr duration:1.0];
 //        });
@@ -76,7 +80,7 @@
     NSURLSession *session = [NSURLSession sharedSession];
     NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         NSString *resultStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        NSLog(@"服务器返回：%@", resultStr);
+        NSLog(@"广告服务器返回：%@", resultStr);
         callback();
     }];
     [task resume];

@@ -125,6 +125,7 @@
                 NSString *nextAdStr = [data substringFromIndex:1];
                 self->currentAd = [currentAdStr intValue];
                 self->nextAd = [nextAdStr intValue];
+                self->todayPlayOver = false;
                 [self preLoadAd];
             } else if (data.length == 1) {
                 if ([@"0" isEqualToString:data]) {
@@ -163,9 +164,19 @@
     }
 }
 
+- (void)setUserId:(NSString*)uId {
+    userId = uId;
+    if (!httpCenter) {
+        httpCenter = [[HttpCenter alloc] initConfig:appId userId:userId channel:channel toast:toastIntance];
+    } else {
+        [httpCenter setUserId:userId];
+    }
+    [self getAdFromNet];
+}
+
 - (void)displayAd:(NSString*)source result:(FlutterResult)result {
     isAdClick = false;
-    currentSource = source;
+    currentSource = [NSString stringWithString:source];
     flutterResult = result;
     if ([self isFastClick]) {
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -175,17 +186,17 @@
         flutterResult(resultDic);
         return;
     }
+    if (todayPlayOver) {
+        NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"error", @"result", @"今日广告次数已被抢光，明天早点来哦～～", @"message", nil];
+        flutterResult(resultDic);
+        return;
+    }
     if (!preLoadCurrentSuccess) {
         dispatch_async(dispatch_get_main_queue(), ^{
             [[JSToastDialogs shareInstance] makeToast:@"您播放的太快哦，慢慢来～～" duration:1.0];
         });
         [self updateShowInfo:0 adType:currentAd];
         NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"error", @"result", @"广告未预加载", @"message", nil];
-        flutterResult(resultDic);
-        return;
-    }
-    if (todayPlayOver) {
-        NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"error", @"result", @"今日广告次数已被抢光，明天早点来哦～～", @"message", nil];
         flutterResult(resultDic);
         return;
     }
@@ -350,7 +361,7 @@
     model.userId = userId;
     pangolinRewardedAd = [[BUNativeExpressRewardedVideoAd alloc] initWithSlotID:pangolinRewardId rewardedVideoModel:model];
     pangolinRewardedAd.delegate = self;
-//    pangolinRewardedAd.rewardPlayAgainInteractionDelegate = self.expressRewardedVideoAgainDelegateObj;
+//    self.pangolinRewardedAd.rewardPlayAgainInteractionDelegate = self;
     [pangolinRewardedAd loadAdData];
 }
 
@@ -365,7 +376,9 @@
 }
 
 - (void)nativeExpressRewardedVideoAdDidVisible:(BUNativeExpressRewardedVideoAd *)rewardedVideoAd {
-    [self startDisplay];
+    NSLog(@"头条广告显示");
+    //此处预加载会重置BUNativeExpressRewardedVideoAd的代理，导致点击、跳过、发放奖励和关闭的回调失效，所以应当把预加载放到close中去
+//    [self startDisplay];
 }
 
 - (void)nativeExpressRewardedVideoAdServerRewardDidSucceed:(BUNativeExpressRewardedVideoAd *)rewardedVideoAd verify:(BOOL)verify {
@@ -374,10 +387,13 @@
 
 - (void)nativeExpressRewardedVideoAdDidClose:(BUNativeExpressRewardedVideoAd *)rewardedVideoAd {
     [self displaySuccess:1];
+//    self.pangolinRewardedAd = nil;
+    [self startDisplay];
 }
 
 - (void)nativeExpressRewardedVideoAdDidPlayFinish:(BUNativeExpressRewardedVideoAd *)rewardedVideoAd didFailWithError:(NSError *_Nullable)error {
     if (error) {
+        NSLog(@"头条广告播放错误: %@", error.description);
         [self displayError:error.description adType:1];
     }
 }
@@ -385,6 +401,10 @@
 - (void)nativeExpressRewardedVideoAdDidClick:(BUNativeExpressRewardedVideoAd *)rewardedVideoAd {
     isAdClick = true;
     NSLog(@"头条广告点击");
+}
+
+- (void)nativeExpressRewardedVideoAdDidClickSkip:(BUNativeExpressRewardedVideoAd *)rewardedVideoAd {
+    NSLog(@"头条广告跳过");
 }
 
 #pragma mark - 快手广告
@@ -418,7 +438,8 @@
 }
 
 - (void)rewardedVideoAdDidVisible:(KSRewardedVideoAd *)rewardedVideoAd {
-    [self startDisplay];
+    NSLog(@"快手广告显示");
+//    [self startDisplay];
 }
 
 - (void)rewardedVideoAd:(KSRewardedVideoAd *)rewardedVideoAd hasReward:(BOOL)hasReward {
@@ -427,6 +448,8 @@
 
 - (void)rewardedVideoAdDidClose:(KSRewardedVideoAd *)rewardedVideoAd {
     [self displaySuccess:2];
+//    ksRewardAd = nil;
+    [self startDisplay];
 }
 
 - (void)rewardedVideoAdDidPlayFinish:(KSRewardedVideoAd *)rewardedVideoAd didFailWithError:(NSError *_Nullable)error {

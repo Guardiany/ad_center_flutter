@@ -9,17 +9,11 @@
 #import <Flutter/Flutter.h>
 #import <BUAdSDK/BUAdSDK.h>
 
-typedef void(^loadSuccess)(void);
-
 @interface PangolinSplashView : NSObject<FlutterPlatformView>
 
 -(instancetype)initWithFrame:(CGRect)frame
                   viewIdentifier:(int64_t)viewId
                        arguments:(id _Nullable)args
                  binaryMessenger:(NSObject<FlutterBinaryMessenger>*)messenger;
-
-- (BUSplashAdView*)getSplashView;
-
-- (void)preLoadSplash: (NSString*)codeId result:(FlutterResult)result didLoad:(loadSuccess)didLoad;
 
 @end

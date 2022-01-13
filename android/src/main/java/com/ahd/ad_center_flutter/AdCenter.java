@@ -248,6 +248,10 @@ public class AdCenter {
 //        FloatView.initAndShowFloatView(mActivity);
     }
 
+    public void setUserId(String userId) {
+        HttpCenter.userId = userId;
+    }
+
 
     public void initAd(Activity activity, String channelId, String appId, String userId, MethodChannel.Result result) {
         if(mActivity != null){

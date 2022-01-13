@@ -14,4 +14,6 @@
 
 - (void)displayAd:(NSString*)source result:(FlutterResult)result;
 
+- (void)setUserId:(NSString*)uId;
+
 @end

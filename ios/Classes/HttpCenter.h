@@ -16,4 +16,6 @@
 
 - (void)uploadAdResult:(NSString*)source adFlag:(int)adFlag flag:(int)flag jumpFlag:(int)jumpFlag callback:(void (^)(void))callback;
 
+- (void)setUserId:(NSString*)uId;
+
 @end

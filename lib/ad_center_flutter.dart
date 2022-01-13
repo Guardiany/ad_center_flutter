@@ -160,6 +160,17 @@ class AdCenterFlutter {
   }
 
   ///
+  /// 设置用户ID
+  ///
+  /// [userId] 用户ID
+  ///
+  static Future setUserId({required String userId}) async {
+    return await _channel.invokeMethod('setUserId', {
+      'userId': userId,
+    });
+  }
+
+  ///
   /// 播放广告
   ///
   /// [functionId] 功能模块ID
@@ -232,16 +243,12 @@ class AdCenterFlutter {
     double? width,
     double? height,
   }) async {
-    if (Platform.isAndroid) {
-      return await _channel.invokeMethod('preLoadBanner', {
-        'androidCodeId':androidCodeId,
-        'iosCodeId':iosCodeId,
-        'width': width,
-        'height': height,
-      });
-    } else {
-      return true;
-    }
+    return await _channel.invokeMethod('preLoadBanner', {
+      'androidCodeId':androidCodeId,
+      'iosCodeId':iosCodeId,
+      'width': width,
+      'height': height,
+    });
   }
 
   ///获取穿山甲banner广告
@@ -272,19 +279,15 @@ class AdCenterFlutter {
     /// 广告类型： 0: 半屏广告  1: 全屏广告
     int adType = 0,
   }) async {
-    if (Platform.isAndroid) {
-      return await _channel.invokeMethod('preLoadNative', {
-        'androidCodeId':androidCodeId,
-        'iosCodeId':iosCodeId,
-        'width': width,
-        'height': height,
-        'positionX': positionX,
-        'positionY': positionY,
-        'adType': adType,
-      });
-    } else {
-      return true;
-    }
+    return await _channel.invokeMethod('preLoadNative', {
+      'androidCodeId':androidCodeId,
+      'iosCodeId':iosCodeId,
+      'width': width,
+      'height': height,
+      'positionX': positionX,
+      'positionY': positionY,
+      'adType': adType,
+    });
   }
 
   ///获取穿山甲信息流广告

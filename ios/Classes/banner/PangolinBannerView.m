@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "PangolinBannerView.h"
+#import "AdPreLoadManager.h"
 
 @interface PangolinBannerView () <BUNativeExpressBannerViewDelegate, FlutterPlugin>
 
@@ -17,9 +18,11 @@
     BUNativeExpressBannerView *bannerView;
     UIWindow *container;
     FlutterMethodChannel *_channel;
+    bool isDispose;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame viewIdentifier:(int64_t)viewId arguments:(id)args binaryMessenger:(NSObject<FlutterPluginRegistrar> *)messenger {
+    isDispose = false;
     
     NSString *methodName = [NSString stringWithFormat:@"com.ahd.TTBannerView_%lld", viewId];
     _channel = [FlutterMethodChannel methodChannelWithName:methodName binaryMessenger:messenger.messenger];
@@ -28,6 +31,20 @@
     container = [[UIWindow alloc] initWithFrame:frame];
     container.rootViewController = [[UIApplication sharedApplication] keyWindow].rootViewController;
     
+    bannerView = [[AdPreLoadManager instance] getBannerView];
+    
+    if (bannerView != nil) {
+        if (!isDispose) {
+            [container.rootViewController.view addSubview:bannerView];
+        }
+    } else {
+        [self loadBanner:args];
+    }
+    
+    return self;
+}
+
+- (void)loadBanner:(NSDictionary*)args {
     NSDictionary *dic = args;
     NSString *codeId = dic[@"iosCodeId"];
     NSString *widthStr = [NSString stringWithFormat:@"%@",dic[@"width"]];
@@ -43,8 +60,6 @@
     bannerView.frame = CGRectMake(0, rootHeight - height, size.width, size.height);
     bannerView.delegate = self;
     [bannerView loadAdData];
-    
-    return self;
 }
 
 - (nonnull UIView *)view {
@@ -53,6 +68,7 @@
 
 - (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
     if ([@"dispose" isEqualToString:call.method]) {
+        isDispose = true;
         [bannerView removeFromSuperview];
         bannerView = nil;
     }
@@ -77,7 +93,9 @@
 
 - (void)nativeExpressBannerAdViewRenderSuccess:(BUNativeExpressBannerView *)bannerAdView {
     NSLog(@"Banner广告渲染成功");
-    [container.rootViewController.view addSubview:bannerAdView];
+    if (!isDispose) {
+        [container.rootViewController.view addSubview:bannerAdView];
+    }
 }
 
 @end

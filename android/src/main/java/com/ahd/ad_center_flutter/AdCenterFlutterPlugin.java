@@ -70,10 +70,19 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
         AdCenter.getInstance().onDestroy();
         result.success(true);
         break;
+      case "setUserId":
+        setUserId(call, result);
+        break;
       default:
         result.notImplemented();
         break;
     }
+  }
+
+  private void setUserId(MethodCall call, Result result) {
+    String userId = call.argument("userId");
+    AdCenter.getInstance().setUserId(userId);
+    result.success(true);
   }
 
   private void initAdCenter(MethodCall call, Result result) {
