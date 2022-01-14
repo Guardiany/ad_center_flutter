@@ -16,7 +16,7 @@
 @implementation PangolinSplashView {
     int64_t _viewId;
     BUSplashAdView *splashView;
-    UIWindow *container;
+    UIView *container;
     FlutterMethodChannel *_channel;
     FlutterResult rootResult;
     BOOL isPreLoad;
@@ -32,8 +32,8 @@
     _channel = [FlutterMethodChannel methodChannelWithName:methodName binaryMessenger:messenger];
     
     
-    container = [[UIWindow alloc] initWithFrame:frame];
-    container.rootViewController = [[UIApplication sharedApplication] keyWindow].rootViewController;
+    container = [[UIView alloc] initWithFrame:frame];
+//    container.rootViewController = [[UIApplication sharedApplication] keyWindow].rootViewController;
     
     splashView = [[AdPreLoadManager instance] getSplashView];
     
@@ -45,7 +45,7 @@
     } else {
         isPreLoad = true;
         splashView.delegate = self;
-        [container.rootViewController.view addSubview:splashView];
+        [container addSubview:splashView];
     }
 
     _viewId = viewId;
@@ -57,13 +57,14 @@
     splashView = [[BUSplashAdView alloc] initWithSlotID:codeId frame:frame];
     splashView.tolerateTimeout = 10;
     splashView.delegate = self;
-    splashView.rootViewController = container.rootViewController;
+    splashView.rootViewController = [[UIApplication sharedApplication] keyWindow].rootViewController;
     [splashView loadAdData];
 }
 
 - (void)removeView {
     [NSThread sleepForTimeInterval:0.5];
     [splashView removeFromSuperview];
+    [container removeFromSuperview];
 //    splashView = nil;
 }
 
@@ -74,7 +75,7 @@
 - (void)splashAdDidLoad:(BUSplashAdView *)splashAd {
     NSLog(@"%@", @"开屏广告加载成功");
     if (!isPreLoad) {
-        [container.rootViewController.view addSubview:splashAd];
+        [container addSubview:splashAd];
     } else {
         NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
         if (rootResult) {

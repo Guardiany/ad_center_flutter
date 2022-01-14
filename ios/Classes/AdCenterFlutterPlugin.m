@@ -30,17 +30,17 @@
       [self initAdCenter:call result:result];
   }
   else if ([@"preLoadSplash" isEqualToString:call.method]) {
-//      NSDictionary *dic = call.arguments;
-//      NSString *iosCodeId = [dic valueForKey:@"iosCodeId"];
-//      [[AdPreLoadManager instance] preLoadSplash:iosCodeId loadSuccess:^{
-//          NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
-//          result(resultDic);
-//      } loadError:^{
-//          NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"error", @"result", @"开屏广告预加载失败", @"message", nil];
-//          result(resultDic);
-//      }];
-      NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
-      result(resultDic);
+      NSDictionary *dic = call.arguments;
+      NSString *iosCodeId = [dic valueForKey:@"iosCodeId"];
+      [[AdPreLoadManager instance] preLoadSplash:iosCodeId loadSuccess:^{
+          NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
+          result(resultDic);
+      } loadError:^{
+          NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"error", @"result", @"开屏广告预加载失败", @"message", nil];
+          result(resultDic);
+      }];
+//      NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
+//      result(resultDic);
   }
   else if ([@"display" isEqualToString:call.method]) {
       if (adCenter) {

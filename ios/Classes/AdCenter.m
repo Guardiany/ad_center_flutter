@@ -86,15 +86,14 @@
 }
 
 - (void)initPangolin {
-    NSLog(@"穿山甲sdk版本：%@", BUAdSDKManager.SDKVersion);
     [BUAdSDKManager setAppID:pangolinAppId];
     [BUAdSDKManager startWithAsyncCompletionHandler:^(BOOL success, NSError *error) {
         if (success) {
-            NSLog(@"%@", @"穿山甲广告SDK初始化成功");
+            NSLog(@"穿山甲广告SDK初始化成功：%@", BUAdSDKManager.SDKVersion);
             NSDictionary *result = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
             self->flutterResult(result);
         } else {
-            NSLog(@"%@", @"穿山甲广告SDK初始化失败");
+            NSLog(@"穿山甲广告SDK初始化失败：%@", BUAdSDKManager.SDKVersion);
             NSDictionary *result = [[NSDictionary alloc] initWithObjectsAndKeys:@"error", @"result", error.description, @"message", nil];
             self->flutterResult(result);
         }
@@ -103,12 +102,12 @@
 
 - (void)initKs {
     [KSAdSDKManager setAppId:ksAppId];
-    NSLog(@"%@", @"快手广告SDK初始化成功");
+    NSLog(@"快手广告SDK初始化成功：%@", [KSAdSDKManager SDKVersion]);
 }
 
 - (void)initTencent {
     [GDTSDKConfig registerAppId:tencentAppId];
-    NSLog(@"%@", @"优量汇广告SDK初始化成功");
+    NSLog(@"优量汇广告SDK初始化成功：%@", [GDTSDKConfig sdkVersion]);
 }
 
 - (void)getAdFromNet {
