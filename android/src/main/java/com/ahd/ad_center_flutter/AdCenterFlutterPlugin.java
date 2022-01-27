@@ -97,6 +97,19 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
     String channelAndroid = call.argument("channel");
     String appIdAndroid = call.argument("appId");
     String userId = call.argument("userId");
+    Boolean _userProMore = call.argument("userProMore");
+    String proMoreId = call.argument("proMoreId");
+    if (proMoreId == null) {
+      proMoreId = "";
+    }
+    String proMoreJiLiId = call.argument("proMoreJiLiId");
+    if (proMoreJiLiId == null) {
+      proMoreJiLiId = "";
+    }
+    boolean userProMore = false;
+    if (_userProMore != null) {
+      userProMore = _userProMore;
+    }
 
     AdCenter.APPNAME = appName;
     AdCenter.TOUTIAOCATID = pangolinAndroidAppId;
@@ -105,8 +118,10 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
     AdCenter.EDITPOSID = tencentRewardAndroidId;
     AdCenter.KUAISHOUCATID = ksAndroidAppId;
     AdCenter.KUAISHOUPOSID = ksRewardAndroidId;
+    AdCenter.ProMoreId = proMoreId;
+    AdCenter.ProMoreJiLiId = proMoreJiLiId;
 
-    AdCenter.getInstance().initAd(activity, channelAndroid, appIdAndroid, userId, result);
+    AdCenter.getInstance().initAd(activity, channelAndroid, appIdAndroid, userId, userProMore, result);
   }
 
   private void preLoadSplash(MethodCall call, Result result) {

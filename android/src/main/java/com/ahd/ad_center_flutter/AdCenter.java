@@ -1,7 +1,6 @@
 package com.ahd.ad_center_flutter;
 
 import android.app.Activity;
-import android.telecom.Call;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -11,6 +10,7 @@ import com.ahd.ad_center_flutter.Ads.AdListener.AdDisplayListener;
 import com.ahd.ad_center_flutter.Ads.AdListener.AdInitListener;
 import com.ahd.ad_center_flutter.Ads.AdListener.AdPreLoadListener;
 import com.ahd.ad_center_flutter.Ads.KsAd.KsAdCenter;
+import com.ahd.ad_center_flutter.Ads.ProMore.ProMoreCenter;
 import com.ahd.ad_center_flutter.Ads.TTAd.TTAdCenter;
 import com.ahd.ad_center_flutter.Ads.YlhAd.YlhAdCenter;
 //import com.ahd.ad_center_flutter.FloatView.FloatView;
@@ -23,9 +23,12 @@ import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import io.flutter.plugin.common.MethodChannel;
+import okhttp3.Call;
 import okhttp3.Response;
 
 /**
@@ -50,9 +53,12 @@ public class AdCenter {
     //优量汇广告
     public static String APPCATID = "";
     public static String EDITPOSID = "";
+    //ProMore广告
+    public static String ProMoreId = "";
+    public static String ProMoreJiLiId = "";
 
-    public static final int TTAD = 1, KSAD = 2, YLHAD = 3;
-    public static boolean TTInitOK = false, KSInitOK = false, YLHInitOK = false;
+    public static final int TTAD = 1, KSAD = 2, YLHAD = 3, PROMOREAD = 4;
+    public static boolean TTInitOK = false, KSInitOK = false, YLHInitOK = false, PROMOREInitOk = false;
     public static long TTFailedTime = -1 ,KSFailedTime = -1,YLHFailedTime = -1;
     public static int currentAd = 1;
     public static int nextAd = 2;
@@ -66,8 +72,16 @@ public class AdCenter {
     private Activity mActivity;
     private MethodChannel.Result result;
     private boolean isAdClick = false;
+    private boolean userProMore = false;
+    public static boolean needWait = true;
+    public static boolean hasWaited = false;
+    public boolean isWaiting = false;
 
     private long tolerateTime = 1000 * 60 * 3;
+
+    private TreeMap<Integer,Boolean> preLoadMap = new TreeMap<>();
+    private HashMap<Integer,Integer> adFlagFromIndex = new LinkedHashMap<>();
+    private int currentPreLoadIndex = 0;
 
     private AdCenter() {
     }
@@ -86,7 +100,30 @@ public class AdCenter {
      * 4：两次失败，连续，且间隔2分钟以上，上报失败。
      * 5：上报失败之后，重新记录失败时间
     */
-    public void updateShowInfo(final int adFlag, int state, boolean needPreLoad) {
+    public void updateShowInfo(int adFlag, int state, boolean needPreLoad) {
+        if (userProMore) {
+            if(adFlag == 4){
+                adFlag = 1;
+            }
+            if (state == 1) {
+                //成功每次都上传
+                HttpCenter.getInstance().uploadAdResult(currentSource, adFlag, state, 0, new okhttp3.Callback() {
+                    @Override
+                    public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
+
+                    }
+
+                    @Override
+                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+
+                    }
+                });
+            } else {
+                checkAndPreLoad();
+            }
+            return;
+        }
+        final int adFlagFinal = adFlag;
         this.mNeedPreLoad = needPreLoad;
         if (state == 1) {
             switch (adFlag){
@@ -105,7 +142,7 @@ public class AdCenter {
                 @Override
                 public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) throws IOException {
                     if(response.code() == 200){
-                        LogTools.printLog(this.getClass(), "上传服务器成功数据：******" + getAdName(adFlag) + ((response.code() == 200) ? "******成功" : "******失败"));
+                        LogTools.printLog(this.getClass(), "上传服务器成功数据：******" + getAdName(adFlagFinal) + ((response.code() == 200) ? "******成功" : "******失败"));
                     }
                     adCenter.getAdFromNet(mNeedPreLoad);
                 }
@@ -158,7 +195,7 @@ public class AdCenter {
                     @Override
                     public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) throws IOException {
                         if(response.code() == 200){
-                            LogTools.printLog(this.getClass(), "上传服务器失败数据：" + getAdName(adFlag) + ((response.code() == 200) ? "成功" : "失败"));
+                            LogTools.printLog(this.getClass(), "上传服务器失败数据：" + getAdName(adFlagFinal) + ((response.code() == 200) ? "成功" : "失败"));
                         }
                         getAdFromNet(mNeedPreLoad);
                     }
@@ -173,7 +210,7 @@ public class AdCenter {
                     @Override
                     public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) throws IOException {
                         if(response.code() == 200){
-                            LogTools.printLog(this.getClass(), "上传服务器跳过数据：" + getAdName(adFlag) + ((response.code() == 200) ? "成功" : "失败"));
+                            LogTools.printLog(this.getClass(), "上传服务器跳过数据：" + getAdName(adFlagFinal) + ((response.code() == 200) ? "成功" : "失败"));
                         }
                         getAdFromNet(mNeedPreLoad);
                     }
@@ -206,8 +243,8 @@ public class AdCenter {
                 final ResponseAdVideo responseAdVideo = gson.fromJson(requestData, ResponseAdVideo.class);
                 if("200".equals(responseAdVideo.errCode)){
                     if(responseAdVideo.data.length() == 2){
-                        currentAd = Integer.valueOf(responseAdVideo.data.substring(0,1));
-                        nextAd = Integer.valueOf(responseAdVideo.data.substring(1,2));
+                        currentAd = Integer.parseInt(responseAdVideo.data.substring(0,1));
+                        nextAd = Integer.parseInt(responseAdVideo.data.substring(1,2));
                         if (needPreLoad) {
                             LogTools.printLog(this.getClass(), "------------------------------------------------------");
                             LogTools.printLog(this.getClass(), "网络返回数据：下一个广告:" + getAdName(currentAd) + ",备用广告：" + getAdName(nextAd));
@@ -253,25 +290,30 @@ public class AdCenter {
     }
 
 
-    public void initAd(Activity activity, String channelId, String appId, String userId, MethodChannel.Result result) {
+    public void initAd(Activity activity, String channelId, String appId, String userId, boolean userProMore, MethodChannel.Result result) {
         if(mActivity != null){
             return;
         }
+
+        preLoadMap.put(4,false);
+        preLoadMap.put(2,false);
+        preLoadMap.put(3,false);
+        adFlagFromIndex.put(0,4);
+        adFlagFromIndex.put(1,2);
+        adFlagFromIndex.put(2,3);
+
         this.result = result;
+        this.userProMore = userProMore;
         HttpCenter.appId = appId;
         HttpCenter.userId = userId;
         HttpCenter.channel = channelId;
         this.mActivity = activity;
         LogTools.printLog(this.getClass(), "开始初始化SDK");
 
-//        if (isDebug) {
-//            FloatView.getShowFlowViewPermission(mActivity);
-//        }
-
         //初始化预加载和播放监听器
         initListener();
 
-//        //穿山甲广告SDK
+        //穿山甲广告SDK
         TTAdCenter.getInstance().initSDK(activity, APPNAME, TOUTIAOCATID, JILICATID, adInitListener);
 
         //初始化快手广告SDK
@@ -280,9 +322,10 @@ public class AdCenter {
         //优量汇初始化
         YlhAdCenter.getInstance().initSDK(activity, APPNAME, APPCATID, EDITPOSID, adInitListener);
 
-
-        //初始化本地计数
-        //MockCountData.getInstance().initTodayAd(activity);
+        if (userProMore) {
+            //初始化聚合广告SDK
+            ProMoreCenter.getInstance().initSDK(activity, APPNAME, "", "", adInitListener);
+        }
     }
 
     private void initListener() {
@@ -294,29 +337,44 @@ public class AdCenter {
                 switch (adFlag) {
                     case TTAD:
                         TTInitOK = true;
-//                        FloatView.change(TTAD, 0);
                         break;
                     case KSAD:
                         KSInitOK = true;
-//                        FloatView.change(KSAD, 0);
                         break;
                     case YLHAD:
                         YLHInitOK = true;
-//                        FloatView.change(YLHAD, 0);
+                        break;
+                    case PROMOREAD:
+                        PROMOREInitOk = true;
                         break;
                 }
 
-                if (TTInitOK && KSInitOK && YLHInitOK) {
-                    mActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Map<String, Object> resultMap = new HashMap<>();
-                            resultMap.put("result", "success");
-                            resultMap.put("message", "广告Sdk初始化成功");
-                            result.success(resultMap);
-                        }
-                    });
-                    getAdFromNet(true);
+                if (userProMore) {
+                    if (PROMOREInitOk && TTInitOK && KSInitOK && YLHInitOK) {
+                        mActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Map<String, Object> resultMap = new HashMap<>();
+                                resultMap.put("result", "success");
+                                resultMap.put("message", "广告Sdk初始化成功");
+                                result.success(resultMap);
+                            }
+                        });
+                        checkAndPreLoad();
+                    }
+                } else {
+                    if (TTInitOK && KSInitOK && YLHInitOK) {
+                        mActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Map<String, Object> resultMap = new HashMap<>();
+                                resultMap.put("result", "success");
+                                resultMap.put("message", "广告Sdk初始化成功");
+                                result.success(resultMap);
+                            }
+                        });
+                        getAdFromNet(true);
+                    }
                 }
             }
 
@@ -339,20 +397,28 @@ public class AdCenter {
             @Override
             public void onPreLoadSuccess(int adFlag) {
                 LogTools.printLog(this.getClass(), "预加载" + getAdName(adFlag) + "广告成功");
-//                FloatView.change(adFlag, 3);
-                preLoadCurrentSuccess = true;
+                if (userProMore) {
+                    preLoadMap.put(adFlag,true);
+                    if(isWaiting){
+//                        LoadingDialogUtil.getInstance().closeLoadingDialog();
+                        displayAd("10",mPlayAdListener);
+                    }else{
+                        checkAndPreLoad();
+                    }
+                } else {
+                    preLoadCurrentSuccess = true;
+                }
             }
 
             @Override
             public void onPreLoadFailed(int adFlag, String errorMessage) {
                 LogTools.printLog(this.getClass(), "预加载" + getAdName(adFlag) + "失败：" + errorMessage);
-//                FloatView.change(adFlag, 2);
-                preLoadCurrentSuccess = false;
-                //上报加载失败马上预加载下一个
-                //currentAd = nextAd;
-                //adCenter.preLoadAd();
-                //updateShowInfo(adFlag, 0);
-                //getAdFromNet(true);
+                if (userProMore) {
+                    preLoadMap.put(adFlag,false);
+                    checkAndPreLoad();
+                } else {
+                    preLoadCurrentSuccess = false;
+                }
             }
         };
         //初始化广告播放监听级
@@ -360,7 +426,13 @@ public class AdCenter {
             @Override
             public void onStartDisplay(int adFlag) {
                 LogTools.printLog(this.getClass(), "开始播放" + getAdName(adFlag) + "广告");
-//                FloatView.change(adFlag, 0);
+                if (userProMore) {
+                    preLoadMap.put(adFlag,false);
+                    //预加载广告已开始播放，请求接下来的广告，逻辑开始循环
+                    currentPreLoadIndex = 0;
+                    checkAndPreLoad();
+                    return;
+                }
                 //预加载广告已开始播放，请求接下来的广告，逻辑开始循环
                 if(nextAd == 0){
                     todayPlayOver = true;
@@ -388,24 +460,74 @@ public class AdCenter {
                 LogTools.printLog(this.getClass(), "播放" + getAdName(adFlag) + "广告失败");
                 //播放失败，上报
                 //回调前端是否当前失败原因
+                if (userProMore) {
+                    preLoadMap.put(adFlag,false);
+                } else {
+                    currentAd = nextAd;
+                    adCenter.preLoadAd();
+                }
+
                 //提示播放失败后，直接提示失败，让用户等待，直接加载下一个广告，等待下次点击触发播放广告
-                mPlayAdListener.onFailed(2, "广告还在加载哦，请稍后再试，谢谢");
-                currentAd = nextAd;
-                adCenter.preLoadAd();
+                mPlayAdListener.onFailed(2, "休息一会儿，稍后再来！！！");
                 updateShowInfo(adFlag, 0,true);
-                //adCenter.getAdFromNet(true);
             }
 
             @Override
             public void onAdClick() {
                 isAdClick = true;
+                LogTools.printLog(this.getClass(), "----------点击广告--------");
             }
         };
     }
 
+    private void checkAndPreLoad(){
+         if(currentPreLoadIndex >= preLoadMap.size()){
+            //已经加载一轮
+            needWait = false;
+            currentPreLoadIndex = 0;
+            if(isWaiting){
+                displayAd("10",mPlayAdListener);
+            }
+        }else{
+            //仍在加载
+            if(!preLoadMap.get(adFlagFromIndex.get(currentPreLoadIndex))){
+                //当前AD未预加载
+                preLoadAd(currentPreLoadIndex++,true);
+            }else{
+                //当前AD已经预加载
+                currentPreLoadIndex++;
+                needWait = true;
+                checkAndPreLoad();
+            }
+        }
+    }
+
+    public void preLoadAd(int adFlag, boolean isIndex) {
+        if(isIndex){
+            adFlag  = adFlagFromIndex.get(adFlag);
+        }
+        if (KSInitOK && YLHInitOK && PROMOREInitOk) {
+            LogTools.printLog(this.getClass(), "开始预加载" + getAdName(adFlag) + "广告");
+            preLoadCurrentSuccess = false;
+            needWait = true;
+            switch (adFlag){
+                case PROMOREAD:
+                    ProMoreCenter.getInstance().preLoadAd(adPreLoadListener);
+                    break;
+                case KSAD:
+                    KsAdCenter.getInstance().preLoadAd(adPreLoadListener);
+                    break;
+                case YLHAD:
+                    YlhAdCenter.getInstance().preLoadAd(adPreLoadListener);
+                    break;
+            }
+        } else {
+            LogTools.printLog(this.getClass(), "未初始化SDK");
+        }
+    }
+
     public void preLoadAd() {
         if (TTInitOK && KSInitOK && YLHInitOK) {
-//            FloatView.change(currentAd, 1);
             LogTools.printLog(this.getClass(), "开始预加载" + getAdName(currentAd) + "广告");
             switch (currentAd) {
                 case TTAD:
@@ -443,18 +565,62 @@ public class AdCenter {
         }
 
         //预加载失败
-        if(!preLoadCurrentSuccess){
-            mPlayAdListener.onFailed(-3, "您播放的太快哦，慢慢来～～");
-            updateShowInfo(currentAd, 0,true);
-            return;
-        }
-
-
-        if (TTInitOK && KSInitOK && YLHInitOK) {
-            if (todayPlayOver) {
-                mPlayAdListener.onFailed(-4, "今日广告次数已被抢光，明天早点来哦～～");
+        if (!userProMore) {
+            if (!preLoadCurrentSuccess) {
+                mPlayAdListener.onFailed(-3, "您播放的太快哦，慢慢来～～");
+                updateShowInfo(currentAd, 0, true);
                 return;
             }
+        }
+
+        if ((TTInitOK || PROMOREInitOk) && KSInitOK && YLHInitOK) {
+            if (userProMore) {
+                currentAd = -1;
+                if(preLoadMap.get(4)){
+                    currentAd = 4;
+                }else if(preLoadMap.get(2)){
+                    currentAd = 2;
+                }else if(preLoadMap.get(3)){
+                    currentAd = 3;
+                }
+
+                //预加载失败
+                if(currentAd == -1){
+                    if(needWait){
+                        isWaiting = true;
+                        LogTools.printLog(this.getClass(), "正在加载数据。。。");
+                        //LoadingDialogUtil.getInstance().showLoadingDialog(mActivity, "正在加载数据。。。");
+                    }else{
+                        if(hasWaited && isWaiting){
+                            //LoadingDialogUtil.getInstance().closeLoadingDialog();
+                            hasWaited = false;
+                            isWaiting = false;
+                            mPlayAdListener.onFailed(-1,"提示用户“休息一会儿，稍后再来 （-v-）！！！");
+                        }else{
+                            if(!hasWaited){
+                                //一轮加载完毕，没有成功，预加载任何广告。
+                                isWaiting = true;
+                                LogTools.printLog(this.getClass(), "正在加载数据。。。");
+                                //LoadingDialogUtil.getInstance().showLoadingDialog(mActivity,"正在加载数据。。。");
+                                //重制预加载广告索引，重新加载一轮
+                                currentPreLoadIndex = 0;
+                                hasWaited = true;
+                                checkAndPreLoad();
+                            }
+                        }
+                    }
+                    return;
+                }else{
+                    hasWaited = false;
+                    isWaiting = false;
+                }
+            } else {
+                if (todayPlayOver) {
+                    mPlayAdListener.onFailed(-4, "今日广告次数已被抢光，明天早点来哦～～");
+                    return;
+                }
+            }
+
             switch (currentAd) {
                 case TTAD:
                     TTAdCenter.getInstance().displayAd(adDisplayListener);
@@ -470,8 +636,14 @@ public class AdCenter {
                         updateShowInfo(currentAd, 0,true);
                     }
                     break;
+                case PROMOREAD:
+                    ProMoreCenter.getInstance().displayAd(adDisplayListener);
+                    break;
+                default:
+                    mPlayAdListener.onFailed(-1, "休息一会儿，稍后再来...");
+                    break;
             }
-            LogTools.printLog(this.getClass(), "开播放" + getAdName(currentAd) + "广告");
+            LogTools.printLog(this.getClass(), "开始播放" + getAdName(currentAd) + "广告");
         } else {
             LogTools.printLog(this.getClass(), "未初始化SDK");
         }
@@ -485,6 +657,8 @@ public class AdCenter {
                 return "快手";
             case YLHAD:
                 return "优量汇";
+            case PROMOREAD:
+                return  "ProMore";
         }
         return "未识别";
     }

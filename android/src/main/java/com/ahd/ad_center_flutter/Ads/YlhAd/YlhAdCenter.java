@@ -1,6 +1,7 @@
 package com.ahd.ad_center_flutter.Ads.YlhAd;
 
 import android.app.Activity;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.ahd.ad_center_flutter.AdCenter;
@@ -14,6 +15,7 @@ import com.qq.e.ads.rewardvideo.RewardVideoAD;
 import com.qq.e.ads.rewardvideo.RewardVideoADListener;
 import com.qq.e.ads.rewardvideo.ServerSideVerificationOptions;
 import com.qq.e.comm.managers.GDTAdSdk;
+import com.qq.e.comm.managers.status.SDKStatus;
 import com.qq.e.comm.util.AdError;
 
 import java.util.Map;
@@ -58,6 +60,7 @@ public class YlhAdCenter implements AdFather {
         this.encourageId = encourageId;
         this.mAdInitListener = adInitListener;
         GDTAdSdk.init(appContext, adId);
+        Log.i("优量汇版本-->", SDKStatus.getIntegrationSDKVersion());
         adInitListener.onSuccess(AdCenter.YLHAD);
     }
 

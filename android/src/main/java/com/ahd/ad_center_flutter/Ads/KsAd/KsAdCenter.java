@@ -1,6 +1,7 @@
 package com.ahd.ad_center_flutter.Ads.KsAd;
 
 import android.app.Activity;
+import android.util.Log;
 
 import com.ahd.ad_center_flutter.AdCenter;
 import com.ahd.ad_center_flutter.Ads.AdFather;
@@ -57,6 +58,7 @@ public class KsAdCenter implements AdFather {
         this.mActivity = appContext;
         this.encourageId = Long.parseLong(encourageId);
         this.mAdInitListener = adInitListener;
+        Log.i("快手版本-->", KsAdSDK.getSDKVersion());
         KsAdSDK.init(appContext, new SdkConfig.Builder()
                 .appId(adId) // 测试aapId，请联系快⼿平台申请正式AppId，必填
                 .appName(appName) // 测试appName，请填写您应⽤的名称，⾮必填

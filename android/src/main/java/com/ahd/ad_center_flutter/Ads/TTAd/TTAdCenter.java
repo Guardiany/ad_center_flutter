@@ -89,6 +89,7 @@ public class TTAdCenter implements AdFather {
         this.mContext = appContext;
         this.encourageId = encourageId;
         this.mAdInitLister = initListener;
+        Log.i("穿山甲版本-->", TTAdSdk.getAdManager().getSDKVersion());
         TTAdSdk.init(appContext, buildConfig(adId), new TTAdSdk.InitCallback() {
             @Override
             public void success() {

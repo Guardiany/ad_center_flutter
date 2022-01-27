@@ -109,6 +109,12 @@ class AdCenterFlutter {
   ///
   /// [userId] 用户ID
   ///
+  /// [userProMore] 是否使用聚合广告
+  ///
+  /// [proMoreId] 聚合广告应用ID
+  ///
+  /// [proMoreJiLiId] 聚合广告的广告位ID
+  ///
   static Future initAdCenter({
     required String appName,
     required String pangolinAndroidAppId,
@@ -126,9 +132,13 @@ class AdCenterFlutter {
     String channel = 'NORMAL:CSJ',
     required String appId,
     required String userId,
+    bool userProMore = false,
+    String? proMoreId,
+    String? proMoreJiLiId,
     AdCenterInitSuccess? onSuccess,
     AdCenterInitError? onError,
   }) async {
+    assert(!(userProMore && (proMoreId == null || proMoreJiLiId == null)), '使用聚合广告时，proMoreId或proMoreJiLiId不能为空');
     final result = await _channel.invokeMethod('init', {
       'appName':appName,
       'pangolinAndroidAppId':pangolinAndroidAppId,
@@ -146,6 +156,9 @@ class AdCenterFlutter {
       'channel':channel,
       'appId':appId,
       'userId':userId,
+      'userProMore':userProMore,
+      'proMoreId':proMoreId,
+      'proMoreJiLiId':proMoreJiLiId,
     });
     if (result['result'] == 'success') {
       if (onSuccess != null) {

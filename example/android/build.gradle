@@ -2,6 +2,10 @@ buildscript {
     repositories {
         google()
         jcenter()
+        //GroMore SDK依赖
+        maven {
+            url "https://artifact.bytedance.com/repository/pangle"
+        }
     }
 
     dependencies {
@@ -13,6 +17,10 @@ allprojects {
     repositories {
         google()
         jcenter()
+        //GroMore SDK依赖
+        maven {
+            url "https://artifact.bytedance.com/repository/pangle"
+        }
     }
 }
 
