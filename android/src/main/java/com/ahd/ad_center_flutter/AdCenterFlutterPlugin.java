@@ -126,7 +126,12 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
 
   private void preLoadSplash(MethodCall call, Result result) {
     String codeId = call.argument("androidCodeId");
-    TTAdCenter.getInstance().preLoadSplashAd(codeId, result);
+    Boolean userGroMore = call.argument("userGroMore");
+    boolean ugm = false;
+    if (userGroMore != null) {
+      ugm = userGroMore;
+    }
+    TTAdCenter.getInstance().preLoadSplashAd(codeId, ugm, result);
   }
 
   private void preLoadBanner(MethodCall call) {

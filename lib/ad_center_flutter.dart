@@ -219,10 +219,12 @@ class AdCenterFlutter {
     required String iosCodeId,
     SplashPreLoadSuccess? success,
     SplashPreLoadError? error,
+    bool? userGroMore,
   }) async {
     final result = await _channel.invokeMethod('preLoadSplash', {
       'androidCodeId':androidCodeId,
-      'iosCodeId':iosCodeId
+      'iosCodeId':iosCodeId,
+      'userGroMore': userGroMore,
     });
     if (result['result'] == 'success') {
       if (success != null) {
@@ -240,12 +242,14 @@ class AdCenterFlutter {
   static Widget pangolinSplashView({
     required String androidCodeId,
     required String iosCodeId,
+    bool? userGroMore,
     PangolinSplashAdCallBack? callBack,
   }) {
     return PangolinSplashView(
       codeId: androidCodeId,
       iosCodeId: iosCodeId,
       callBack: callBack,
+      userGroMore: userGroMore ?? false,
     );
   }
 

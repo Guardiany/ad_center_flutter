@@ -76,10 +76,11 @@ public class AdRewardManager {
                 .setMuted(true)//对所有SDK的激励广告生效，除需要在平台配置的SDK，如穿山甲SDK
                 .setVolume(0f)//配合Admob的声音大小设置[0-1]
                 .setGMAdSlotGDTOption(GMAdOptionUtil.getGMAdSlotGDTOption().build())
-                .setGMAdSlotBaiduOption(GMAdOptionUtil.getGMAdSlotBaiduOption().build())
-                .setUserID("")//用户id,必传参数
+//                .setGMAdSlotBaiduOption(GMAdOptionUtil.getGMAdSlotBaiduOption().build())
+                .setUserID("ahd")//用户id,必传参数
                 .setUseSurfaceView(true)
                 .setOrientation(GMAdConstant.VERTICAL)//必填参数，期望视频的播放方向：GMAdConstant.HORIZONTAL 或 GMAdConstant.VERTICAL
+                .setBidNotify(true)
                 .build();
         mGMRewardAd.loadAd(adSlotRewardVideo, gmRewardedAdLoadCallback);
     }
@@ -109,6 +110,9 @@ public class AdRewardManager {
          * 获取实时填充/缓存池中价格最优的代码位信息即相关价格信息，每次只有一个信息
          */
         GMAdEcpmInfo gmAdEcpmInfo = mGMRewardAd.getBestEcpm();
+        if (gmAdEcpmInfo == null) {
+            gmAdEcpmInfo = mGMRewardAd.getShowEcpm();
+        }
         if (gmAdEcpmInfo != null) {
             Log.e(TAG, "***实时填充/缓存池中价格最优的代码位信息*** AdNetworkPlatformId" + gmAdEcpmInfo.getAdNetworkPlatformId()
                     + "  AdNetworkRitId:" + gmAdEcpmInfo.getAdNetworkRitId()

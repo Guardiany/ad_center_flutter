@@ -11,11 +11,13 @@ class PangolinSplashView extends StatefulWidget {
     Key? key,
     required this.codeId,
     required this.iosCodeId,
+    required this.userGroMore,
     this.callBack,
   }) : super(key: key);
 
   final String codeId;
   final String iosCodeId;
+  final bool userGroMore;
   final PangolinSplashAdCallBack? callBack;
 
   @override
@@ -35,6 +37,7 @@ class _PangolinSplashViewState extends State<PangolinSplashView> {
         viewType: _viewType,
         creationParams: {
           'androidCodeId': widget.codeId,
+          'userGroMore': widget.userGroMore,
         },
         onPlatformViewCreated: _registerChannel,
         creationParamsCodec: const StandardMessageCodec(),
@@ -44,6 +47,7 @@ class _PangolinSplashViewState extends State<PangolinSplashView> {
         viewType: _viewType,
         creationParams: {
           'iosCodeId': widget.iosCodeId,
+          'userGroMore': widget.userGroMore,
         },
         onPlatformViewCreated: _registerChannel,
         creationParamsCodec: const StandardMessageCodec(),

@@ -320,7 +320,7 @@ public class AdCenter {
         KsAdCenter.getInstance().initSDK(activity, APPNAME, KUAISHOUCATID, KUAISHOUPOSID, adInitListener);
 
         //优量汇初始化
-        YlhAdCenter.getInstance().initSDK(activity, APPNAME, APPCATID, EDITPOSID, adInitListener);
+//        YlhAdCenter.getInstance().initSDK(activity, APPNAME, APPCATID, EDITPOSID, adInitListener);
 
         if (userProMore) {
             //初始化聚合广告SDK
@@ -350,7 +350,7 @@ public class AdCenter {
                 }
 
                 if (userProMore) {
-                    if (PROMOREInitOk && TTInitOK && KSInitOK && YLHInitOK) {
+                    if (PROMOREInitOk && TTInitOK && KSInitOK /*&& YLHInitOK*/) {
                         mActivity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -363,7 +363,7 @@ public class AdCenter {
                         checkAndPreLoad();
                     }
                 } else {
-                    if (TTInitOK && KSInitOK && YLHInitOK) {
+                    if (TTInitOK && KSInitOK /*&& YLHInitOK*/) {
                         mActivity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -506,7 +506,7 @@ public class AdCenter {
         if(isIndex){
             adFlag  = adFlagFromIndex.get(adFlag);
         }
-        if (KSInitOK && YLHInitOK && PROMOREInitOk) {
+        if (KSInitOK /*&& YLHInitOK*/ && PROMOREInitOk) {
             LogTools.printLog(this.getClass(), "开始预加载" + getAdName(adFlag) + "广告");
             preLoadCurrentSuccess = false;
             needWait = true;
@@ -518,7 +518,7 @@ public class AdCenter {
                     KsAdCenter.getInstance().preLoadAd(adPreLoadListener);
                     break;
                 case YLHAD:
-                    YlhAdCenter.getInstance().preLoadAd(adPreLoadListener);
+//                    YlhAdCenter.getInstance().preLoadAd(adPreLoadListener);
                     break;
             }
         } else {
@@ -573,7 +573,7 @@ public class AdCenter {
             }
         }
 
-        if ((TTInitOK || PROMOREInitOk) && KSInitOK && YLHInitOK) {
+        if ((TTInitOK || PROMOREInitOk) && KSInitOK /*&& YLHInitOK*/) {
             if (userProMore) {
                 currentAd = -1;
                 if(preLoadMap.get(4)){

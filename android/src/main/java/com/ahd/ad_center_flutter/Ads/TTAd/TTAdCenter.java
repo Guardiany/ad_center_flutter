@@ -7,12 +7,20 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.ahd.ad_center_flutter.AdCenter;
 import com.ahd.ad_center_flutter.Ads.AdFather;
 import com.ahd.ad_center_flutter.Ads.AdListener.AdDisplayListener;
 import com.ahd.ad_center_flutter.Ads.AdListener.AdInitListener;
 import com.ahd.ad_center_flutter.Ads.AdListener.AdPreLoadListener;
 import com.ahd.ad_center_flutter.Log.LogTools;
+import com.bytedance.msdk.adapter.util.UIUtils;
+import com.bytedance.msdk.api.AdError;
+import com.bytedance.msdk.api.v2.GMAdConstant;
+import com.bytedance.msdk.api.v2.ad.splash.GMSplashAd;
+import com.bytedance.msdk.api.v2.ad.splash.GMSplashAdLoadCallback;
+import com.bytedance.msdk.api.v2.slot.GMAdSlotSplash;
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdConfig;
 import com.bytedance.sdk.openadsdk.TTAdConstant;
@@ -48,6 +56,7 @@ public class TTAdCenter implements AdFather {
     private AdDisplayListener mAdDisplayListener;
     private Activity mContext;
     private TTSplashAd ttSplashAd;
+    private GMSplashAd gmSplashAd;
     private TTNativeExpressAd ttNativeExpressHalfAd;
     private TTNativeExpressAd ttNativeExpressFullAd;
     private TTNativeExpressAd ttNativeBannerAd;
@@ -67,9 +76,17 @@ public class TTAdCenter implements AdFather {
         }
         return ttAdCenter;
     }
-    
+
+    public Activity getmContext() {
+        return mContext;
+    }
+
     public TTSplashAd getTtSplashAd() {
         return ttSplashAd;
+    }
+
+    public GMSplashAd getGmSplashAd() {
+        return gmSplashAd;
     }
 
     public TTNativeExpressAd getTtNativeExpressHalfAd() {
@@ -120,7 +137,7 @@ public class TTAdCenter implements AdFather {
                 .build();
     }
 
-    public void preLoadSplashAd(String codeId, final MethodChannel.Result result) {
+    public void preLoadSplashAd(String codeId, boolean userGroMore, final MethodChannel.Result result) {
         if(!isInit){
             LogTools.printLog(this.getClass(), "头条初始化未完成");
             Map<String, Object> resultMap = new HashMap<>();
@@ -130,46 +147,85 @@ public class TTAdCenter implements AdFather {
             //初始化失败
             return;
         }
-        ttAdManager = TTAdSdk.getAdManager();
-        TTAdNative mTTAdNative = ttAdManager.createAdNative(mContext);
-        AdSlot adSlot = new AdSlot.Builder()
-                .setCodeId(codeId)
-                .setImageAcceptedSize(1080, 1920)
-                .setAdLoadType(PRELOAD)//推荐使用，用于标注此次的广告请求用途为预加载（当做缓存）还是实时加载，方便后续为开发者优化相关策略
-                .build();
-        mTTAdNative.loadSplashAd(adSlot, new TTAdNative.SplashAdListener() {
-            @Override
-            public void onError(int i, String s) {
-                Map<String, Object> resultMap = new HashMap<>();
-                resultMap.put("result", "error");
-                resultMap.put("message", "开屏广告加载失败："+s);
-                sendResult(resultMap, result);
-            }
-
-            @Override
-            public void onTimeout() {
-                Map<String, Object> resultMap = new HashMap<>();
-                resultMap.put("result", "error");
-                resultMap.put("message", "开屏广告加载超时");
-                sendResult(resultMap, result);
-            }
-
-            @Override
-            public void onSplashAdLoad(TTSplashAd ttSplashAd) {
-                if (ttSplashAd == null) {
+        if (userGroMore) {
+            final GMSplashAd loadSplashAd = new GMSplashAd(mContext, codeId);
+            //创建开屏广告请求参数AdSlot,具体参数含义参考文档
+            GMAdSlotSplash adSlot = new GMAdSlotSplash.Builder()
+                    .setImageAdSize(UIUtils.getScreenWidth(mContext), UIUtils.getScreenHeight(mContext)) // 单位px
+                    .setTimeOut(4000)//设置超时
+                    .setSplashButtonType(GMAdConstant.SPLASH_BUTTON_TYPE_FULL_SCREEN)
+                    .setDownloadType(GMAdConstant.DOWNLOAD_TYPE_POPUP)
+//                    .setForceLoadBottom(mForceLoadBottom) //强制加载兜底开屏广告，只能在GroMore提供的demo中使用，其他情况设置无效
+                    .build();
+            //请求广告，调用开屏广告异步请求接口，对请求回调的广告作渲染处理
+            loadSplashAd.loadAd(adSlot, new GMSplashAdLoadCallback() {
+                @Override
+                public void onSplashAdLoadFail(@NonNull AdError adError) {
                     Map<String, Object> resultMap = new HashMap<>();
                     resultMap.put("result", "error");
-                    resultMap.put("message", "拉取广告失败");
+                    resultMap.put("message", "聚合开屏广告加载失败："+adError.message);
                     sendResult(resultMap, result);
-                    return;
                 }
-                TTAdCenter.this.ttSplashAd = ttSplashAd;
-                Map<String, Object> resultMap = new HashMap<>();
-                resultMap.put("result", "success");
-                resultMap.put("message", "广告加载成功");
-                sendResult(resultMap, result);
-            }
-        }, 3000);
+
+                @Override
+                public void onSplashAdLoadSuccess() {
+                    TTAdCenter.this.gmSplashAd = loadSplashAd;
+                    Map<String, Object> resultMap = new HashMap<>();
+                    resultMap.put("result", "success");
+                    resultMap.put("message", "聚合开屏广告加载成功");
+                    sendResult(resultMap, result);
+                }
+
+                @Override
+                public void onAdLoadTimeout() {
+                    Map<String, Object> resultMap = new HashMap<>();
+                    resultMap.put("result", "error");
+                    resultMap.put("message", "聚合开屏广告加载超时");
+                    sendResult(resultMap, result);
+                }
+            });
+        } else {
+            ttAdManager = TTAdSdk.getAdManager();
+            TTAdNative mTTAdNative = ttAdManager.createAdNative(mContext);
+            AdSlot adSlot = new AdSlot.Builder()
+                    .setCodeId(codeId)
+                    .setImageAcceptedSize(1080, 1920)
+                    .setAdLoadType(PRELOAD)//推荐使用，用于标注此次的广告请求用途为预加载（当做缓存）还是实时加载，方便后续为开发者优化相关策略
+                    .build();
+            mTTAdNative.loadSplashAd(adSlot, new TTAdNative.SplashAdListener() {
+                @Override
+                public void onError(int i, String s) {
+                    Map<String, Object> resultMap = new HashMap<>();
+                    resultMap.put("result", "error");
+                    resultMap.put("message", "开屏广告加载失败："+s);
+                    sendResult(resultMap, result);
+                }
+
+                @Override
+                public void onTimeout() {
+                    Map<String, Object> resultMap = new HashMap<>();
+                    resultMap.put("result", "error");
+                    resultMap.put("message", "开屏广告加载超时");
+                    sendResult(resultMap, result);
+                }
+
+                @Override
+                public void onSplashAdLoad(TTSplashAd ttSplashAd) {
+                    if (ttSplashAd == null) {
+                        Map<String, Object> resultMap = new HashMap<>();
+                        resultMap.put("result", "error");
+                        resultMap.put("message", "拉取广告失败");
+                        sendResult(resultMap, result);
+                        return;
+                    }
+                    TTAdCenter.this.ttSplashAd = ttSplashAd;
+                    Map<String, Object> resultMap = new HashMap<>();
+                    resultMap.put("result", "success");
+                    resultMap.put("message", "广告加载成功");
+                    sendResult(resultMap, result);
+                }
+            }, 3000);
+        }
     }
 
     public void preLoadBannerAdView(String codeId, float width, float height) {
