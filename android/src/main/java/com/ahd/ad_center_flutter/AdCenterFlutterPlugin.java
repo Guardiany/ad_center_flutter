@@ -154,6 +154,7 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
     Double width = (Double) call.argument("width");
     Double height = (Double) call.argument("height");
     Integer adType = call.argument("adType");
+    Boolean useGroMore = call.argument("useGroMore");
     float fWidth = 640;
     float fHeight = 70;
     if (width != null) {
@@ -166,7 +167,11 @@ public class AdCenterFlutterPlugin implements FlutterPlugin, MethodCallHandler, 
     if (adType != null) {
       type = adType;
     }
-    TTAdCenter.getInstance().preLoadNativeAdView(codeId, fWidth, fHeight, type);
+    boolean ugm = false;
+    if (useGroMore != null) {
+      ugm = useGroMore;
+    }
+    TTAdCenter.getInstance().preLoadNativeAdView(codeId, fWidth, fHeight, type, ugm);
   }
 
   private boolean isResultUsed = false;

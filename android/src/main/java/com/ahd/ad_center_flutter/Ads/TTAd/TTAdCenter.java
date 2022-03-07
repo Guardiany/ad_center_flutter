@@ -18,8 +18,13 @@ import com.ahd.ad_center_flutter.Log.LogTools;
 import com.bytedance.msdk.adapter.util.UIUtils;
 import com.bytedance.msdk.api.AdError;
 import com.bytedance.msdk.api.v2.GMAdConstant;
+import com.bytedance.msdk.api.v2.ad.nativeAd.GMNativeAd;
+import com.bytedance.msdk.api.v2.ad.nativeAd.GMNativeAdLoadCallback;
+import com.bytedance.msdk.api.v2.ad.nativeAd.GMUnifiedNativeAd;
 import com.bytedance.msdk.api.v2.ad.splash.GMSplashAd;
 import com.bytedance.msdk.api.v2.ad.splash.GMSplashAdLoadCallback;
+import com.bytedance.msdk.api.v2.slot.GMAdOptionUtil;
+import com.bytedance.msdk.api.v2.slot.GMAdSlotNative;
 import com.bytedance.msdk.api.v2.slot.GMAdSlotSplash;
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdConfig;
@@ -60,6 +65,8 @@ public class TTAdCenter implements AdFather {
     private TTNativeExpressAd ttNativeExpressHalfAd;
     private TTNativeExpressAd ttNativeExpressFullAd;
     private TTNativeExpressAd ttNativeBannerAd;
+    private GMNativeAd gmAdNativeHalfAd;
+    private GMNativeAd gmAdNativeFullAd;
     //头条ID
     private String ksId;
     //快手激励广告ID
@@ -99,6 +106,14 @@ public class TTAdCenter implements AdFather {
 
     public TTNativeExpressAd getTtNativeBannerAd() {
         return ttNativeBannerAd;
+    }
+
+    public GMNativeAd getGmAdNativeHalfAd() {
+        return gmAdNativeHalfAd;
+    }
+
+    public GMNativeAd getGmAdNativeFullAd() {
+        return gmAdNativeFullAd;
     }
 
     @Override
@@ -252,8 +267,40 @@ public class TTAdCenter implements AdFather {
         });
     }
 
-    public void preLoadNativeAdView(String codeId, float adWidth, float adHeight, final int type) {
+    public void preLoadNativeAdView(String codeId, float adWidth, float adHeight, final int type, boolean useGroMore) {
         if(!isInit) {
+            return;
+        }
+        if (useGroMore) {
+            GMUnifiedNativeAd gmAdNative = new GMUnifiedNativeAd(mContext, codeId);
+            GMAdSlotNative adSlotNative = new GMAdSlotNative.Builder()
+                    .setGMAdSlotBaiduOption(GMAdOptionUtil.getGMAdSlotBaiduOption().build())//百度相关的配置
+//                    .setGMAdSlotGDTOption(adSlotNativeBuilder.build())//gdt相关的配置
+                    .setAdmobNativeAdOptions(GMAdOptionUtil.getAdmobNativeAdOptions())//admob相关配置
+                    .setAdStyleType(com.bytedance.msdk.api.AdSlot.TYPE_NATIVE_AD)//表示请求的模板广告还是原生广告，com.bytedance.msdk.api.AdSlot.TYPE_EXPRESS_AD：模板广告 ； com.bytedance.msdk.api.AdSlot.TYPE_NATIVE_AD：原生广告
+                    // 备注
+                    // 1:如果是信息流自渲染广告，设置广告图片期望的图片宽高 ，不能为0
+                    // 2:如果是信息流模板广告，宽度设置为希望的宽度，高度设置为0(0为高度选择自适应参数)
+                    .setImageAdSize((int) adWidth, (int) adHeight)// 必选参数 单位dp ，详情见上面备注解释
+                    .setAdCount(1)//请求广告数量为1到3条
+                    .build();
+            gmAdNative.loadAd(adSlotNative, new GMNativeAdLoadCallback() {
+                @Override
+                public void onAdLoaded(@NonNull List<GMNativeAd> list) {
+                    if (!list.isEmpty()) {
+                        if (type == 0) {
+                            TTAdCenter.this.gmAdNativeHalfAd = list.get(0);
+                        } else {
+                            TTAdCenter.this.gmAdNativeFullAd = list.get(0);
+                        }
+                    }
+                }
+
+                @Override
+                public void onAdLoadedFail(@NonNull AdError adError) {
+                    LogTools.printLog(this.getClass(), "聚合信息流广告预加载失败："+adError.message);
+                }
+            });
             return;
         }
         ttAdManager = TTAdSdk.getAdManager();

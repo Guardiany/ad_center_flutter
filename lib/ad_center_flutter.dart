@@ -295,6 +295,7 @@ class AdCenterFlutter {
     double? positionY,
     /// 广告类型： 0: 半屏广告  1: 全屏广告
     int adType = 0,
+    bool? useGroMore,
   }) async {
     return await _channel.invokeMethod('preLoadNative', {
       'androidCodeId':androidCodeId,
@@ -304,6 +305,7 @@ class AdCenterFlutter {
       'positionX': positionX,
       'positionY': positionY,
       'adType': adType,
+      'useGroMore': useGroMore,
     });
   }
 
@@ -318,6 +320,7 @@ class AdCenterFlutter {
     double? positionY,
     /// 广告类型： 0: 半屏广告  1: 全屏广告
     int adType = 0,
+    bool? useGroMore,
   }) {
     return PangolinNativeView(
       androidCodeId: androidCodeId,
@@ -327,6 +330,7 @@ class AdCenterFlutter {
       positionX: positionX,
       positionY: positionY,
       adType: adType,
+      useGroMore: useGroMore ?? false,
     );
   }
 
