@@ -11,6 +11,9 @@ import androidx.annotation.NonNull;
 
 import com.ahd.ad_center_flutter.Log.LogTools;
 import com.bytedance.msdk.api.AdError;
+import com.bytedance.msdk.api.format.TTMediaView;
+import com.bytedance.msdk.api.v2.GMMediationAdSdk;
+import com.bytedance.msdk.api.v2.GMSettingConfigCallback;
 import com.bytedance.msdk.api.v2.ad.nativeAd.GMNativeAd;
 import com.bytedance.msdk.api.v2.ad.nativeAd.GMNativeAdListener;
 import com.bytedance.msdk.api.v2.ad.nativeAd.GMNativeAdLoadCallback;
@@ -35,11 +38,13 @@ public class TTNativeAdView implements PlatformView {
     private final Context context;
     private final MethodChannel methodChannel;
     private final FrameLayout mExpressContainer;
+    com.bytedance.msdk.api.format.TTNativeAdView superView;
     private int topX = 0;
     private int lefY = 0;
     private TTNativeExpressAd expressAd;
     private GMNativeAd gmNativeAd;
     private int adType = 0;
+    private boolean useGroMore;
 
     TTNativeAdView(Context context, BinaryMessenger messenger, int id, Map<String, Object> params) {
         this.context = context;
@@ -53,7 +58,7 @@ public class TTNativeAdView implements PlatformView {
         Double positionX = (Double) params.get("positionX");
         Double positionY = (Double) params.get("positionY");
         Integer adType = (Integer) params.get("adType");
-        Boolean userGroMore = (Boolean) params.get("userGroMore");
+        Boolean userGroMore = (Boolean) params.get("useGroMore");
 
         float fWidth = 640;
         float fHeight = 70;
@@ -77,11 +82,12 @@ public class TTNativeAdView implements PlatformView {
         if (userGroMore != null) {
             ugm = userGroMore;
         }
+        useGroMore = ugm;
 
         loadNativeAd(codeId, fWidth, fHeight, type, ugm);
     }
 
-    private void loadNativeAd(String codeId, float adWidth, float adHeight, int type, final boolean useGroMore) {
+    private void loadNativeAd(final String codeId, final float adWidth, final float adHeight, int type, final boolean useGroMore) {
         adType = type;
         if (useGroMore) {
             if (type == 0) {
@@ -90,35 +96,19 @@ public class TTNativeAdView implements PlatformView {
                 gmNativeAd = TTAdCenter.getInstance().getGmAdNativeFullAd();
             }
             if (gmNativeAd != null) {
-                render(true);
+                render(true, (int)adWidth, (int)adHeight);
             } else {
-                GMUnifiedNativeAd gmAdNative = new GMUnifiedNativeAd(context, codeId);
-                GMAdSlotNative adSlotNative = new GMAdSlotNative.Builder()
-                        .setGMAdSlotBaiduOption(GMAdOptionUtil.getGMAdSlotBaiduOption().build())//百度相关的配置
-//                    .setGMAdSlotGDTOption(adSlotNativeBuilder.build())//gdt相关的配置
-                        .setAdmobNativeAdOptions(GMAdOptionUtil.getAdmobNativeAdOptions())//admob相关配置
-                        .setAdStyleType(com.bytedance.msdk.api.AdSlot.TYPE_EXPRESS_AD)//表示请求的模板广告还是原生广告，com.bytedance.msdk.api.AdSlot.TYPE_EXPRESS_AD：模板广告 ； com.bytedance.msdk.api.AdSlot.TYPE_NATIVE_AD：原生广告
-                        // 备注
-                        // 1:如果是信息流自渲染广告，设置广告图片期望的图片宽高 ，不能为0
-                        // 2:如果是信息流模板广告，宽度设置为希望的宽度，高度设置为0(0为高度选择自适应参数)
-                        .setImageAdSize((int) adWidth, (int) adHeight)// 必选参数 单位dp ，详情见上面备注解释
-                        .setAdCount(1)//请求广告数量为1到3条
-                        .build();
-                gmAdNative.loadAd(adSlotNative, new GMNativeAdLoadCallback() {
-                    @Override
-                    public void onAdLoaded(@NonNull List<GMNativeAd> list) {
-                        if (!list.isEmpty()) {
-                            gmNativeAd = list.get(0);
+                if (GMMediationAdSdk.configLoadSuccess()) {
+                    loadGmNativeAd(codeId, adWidth, adHeight);
+                } else {
+                    GMMediationAdSdk.registerConfigCallback(new GMSettingConfigCallback() {
+                        @Override
+                        public void configLoad() {
+                            loadGmNativeAd(codeId, adWidth, adHeight);
                         }
-                    }
-
-                    @Override
-                    public void onAdLoadedFail(@NonNull AdError adError) {
-                        methodChannel.invokeMethod("error", "聚合信息流广告加载失败："+adError.message);
-                    }
-                });
+                    });
+                }
             }
-            render(true);
             return;
         }
         if (type == 0) {
@@ -127,7 +117,7 @@ public class TTNativeAdView implements PlatformView {
             expressAd = TTAdCenter.getInstance().getTtNativeExpressFullAd();
         }
         if (expressAd != null) {
-            render(false);
+            render(false, (int)adWidth, (int)adHeight);
         } else {
             TTAdNative mTTAdNative = TTAdSdk.getAdManager().createAdNative(context);
             AdSlot adSlot = new AdSlot.Builder()
@@ -147,14 +137,43 @@ public class TTNativeAdView implements PlatformView {
                 public void onNativeExpressAdLoad(List<TTNativeExpressAd> list) {
                     if (!list.isEmpty()) {
                         expressAd = list.get(0);
-                        render(false);
+                        render(false, (int)adWidth, (int)adHeight);
                     }
                 }
             });
         }
     }
 
-    private void render(boolean userGroMore) {
+    private void loadGmNativeAd(String codeId, final float adWidth, final float adHeight) {
+        GMUnifiedNativeAd gmAdNative = new GMUnifiedNativeAd(context, codeId);
+        GMAdSlotNative adSlotNative = new GMAdSlotNative.Builder()
+                .setGMAdSlotBaiduOption(GMAdOptionUtil.getGMAdSlotBaiduOption().build())//百度相关的配置
+//                    .setGMAdSlotGDTOption(adSlotNativeBuilder.build())//gdt相关的配置
+                .setAdmobNativeAdOptions(GMAdOptionUtil.getAdmobNativeAdOptions())//admob相关配置
+                .setAdStyleType(com.bytedance.msdk.api.AdSlot.TYPE_EXPRESS_AD)//表示请求的模板广告还是原生广告，com.bytedance.msdk.api.AdSlot.TYPE_EXPRESS_AD：模板广告 ； com.bytedance.msdk.api.AdSlot.TYPE_NATIVE_AD：原生广告
+                // 备注
+                // 1:如果是信息流自渲染广告，设置广告图片期望的图片宽高 ，不能为0
+                // 2:如果是信息流模板广告，宽度设置为希望的宽度，高度设置为0(0为高度选择自适应参数)
+                .setImageAdSize((int) adWidth, (int) adHeight)// 必选参数 单位dp ，详情见上面备注解释
+                .setAdCount(1)//请求广告数量为1到3条
+                .build();
+        gmAdNative.loadAd(adSlotNative, new GMNativeAdLoadCallback() {
+            @Override
+            public void onAdLoaded(@NonNull List<GMNativeAd> list) {
+                if (!list.isEmpty()) {
+                    gmNativeAd = list.get(0);
+                    render(true, (int)adWidth, (int)adHeight);
+                }
+            }
+
+            @Override
+            public void onAdLoadedFail(@NonNull AdError adError) {
+                LogTools.printLog(this.getClass(), "聚合信息流广告预加载失败："+adError.message);
+            }
+        });
+    }
+
+    private void render(boolean userGroMore, final int sWidth, final int sHeight) {
         if (userGroMore) {
             gmNativeAd.setNativeAdListener(new GMNativeExpressAdListener() {
                 @Override
@@ -164,12 +183,12 @@ public class TTNativeAdView implements PlatformView {
 
                 @Override
                 public void onRenderSuccess(float v, float v1) {
-                    if (mExpressContainer != null) {
-                        com.bytedance.msdk.api.format.TTNativeAdView superView = new com.bytedance.msdk.api.format.TTNativeAdView(context);
-                        View view = gmNativeAd.getExpressView();
-                        if (view != null) {
-                            superView.addView(view);
-                        }
+                    superView = new com.bytedance.msdk.api.format.TTNativeAdView(context);
+                    View view = gmNativeAd.getExpressView();
+                    if (view != null) {
+//                        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(sWidth, sHeight);
+                        superView.removeAllViews();
+                        superView.addView(view);
                         mExpressContainer.addView(superView);
                     }
                     methodChannel.invokeMethod("render", "聚合信息流广告渲染成功");
@@ -231,5 +250,12 @@ public class TTNativeAdView implements PlatformView {
             expressAd.destroy();
             expressAd = null;
         }
+//        if (useGroMore) {
+//            if (adType == 0) {
+//                TTAdCenter.getInstance().destroyGmAdNativeHalf();
+//            } else {
+//                TTAdCenter.getInstance().destroyGmAdNativeFull();
+//            }
+//        }
     }
 }
