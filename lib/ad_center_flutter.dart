@@ -135,6 +135,8 @@ class AdCenterFlutter {
     bool userProMore = false,
     String? proMoreId,
     String? proMoreJiLiId,
+    String? iosGroMoreId,
+    String? iosGroMoreJiLiId,
     AdCenterInitSuccess? onSuccess,
     AdCenterInitError? onError,
   }) async {
@@ -159,6 +161,8 @@ class AdCenterFlutter {
       'userProMore':userProMore,
       'proMoreId':proMoreId,
       'proMoreJiLiId':proMoreJiLiId,
+      'iosGroMoreId':iosGroMoreId,
+      'iosGroMoreJiLiId':iosGroMoreJiLiId,
     });
     if (result['result'] == 'success') {
       if (onSuccess != null) {

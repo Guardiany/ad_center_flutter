@@ -16,10 +16,11 @@ A new Flutter project.
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-  s.platform = :ios, '8.0'
+  s.platform = :ios, '9.0'
   s.dependency 'GDTMobSDK', '~> 4.13.42'
   s.dependency 'Ads-CN', '~> 4.2.0.2'
   s.dependency 'KSAdSDK', '~> 3.3.20'
+  s.vendored_frameworks = 'Frameworks/ABUAdSDK.framework', 'Frameworks/ABUAdSDKAdapter.framework'
   s.static_framework = true
 
   # Flutter.framework does not contain a i386 slice.

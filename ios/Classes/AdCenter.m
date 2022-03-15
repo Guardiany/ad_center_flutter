@@ -14,8 +14,9 @@
 #import "HttpCenter.h"
 #import "JSToastDialogs.h"
 #import "GDTRewardVideoAd.h"
+#import <ABUAdSDK/ABUAdSDK.h>
 
-@interface AdCenter () <BUNativeExpressRewardedVideoAdDelegate, KSRewardedVideoAdDelegate, GDTRewardedVideoAdDelegate>
+@interface AdCenter () <BUNativeExpressRewardedVideoAdDelegate, KSRewardedVideoAdDelegate, GDTRewardedVideoAdDelegate, ABURewardedVideoAdDelegate>
 
 @end
 
@@ -30,11 +31,14 @@
     NSString *channel;
     NSString *appId;
     NSString *userId;
+    NSString *proMoreId;
+    NSString *proMoreJiLiId;
     int currentAd;
     int nextAd;
     BOOL todayPlayOver;
     BOOL preLoadCurrentSuccess;
     BOOL isAdClick;
+    BOOL useGromore;
     NSString *currentSource;
     long lastClickTime;
     int TTFailedTime;
@@ -47,9 +51,13 @@
     BUNativeExpressRewardedVideoAd *pangolinRewardedAd;
     KSRewardedVideoAd *ksRewardAd;
     GDTRewardVideoAd *tencentRewardAd;
+    ABURewardedVideoAd *abuRewardedVideoAd;
+    UIViewController *rootViewController;
+//    AbuAdRewardVideoDelegate *abuAdRewardVideoDelegate;
 }
 
-- (void)initAppName:(NSString*)app_name appId:(NSString*)app_id pangolinAppId:(NSString*)pangolin_appId pangolinRewardId:(NSString*)pangolin_rewardId tencentAppId:(NSString*)tencent_appId tencentRewardId:(NSString*)tencent_rewardId ksAppId:(NSString*)ks_appId ksRewardId:(NSString*)ks_rewardId channel:(NSString*)_channel userId:(NSString*)user_id result:(FlutterResult)result {
+- (void)initAppName:(NSString*)app_name appId:(NSString*)app_id pangolinAppId:(NSString*)pangolin_appId pangolinRewardId:(NSString*)pangolin_rewardId tencentAppId:(NSString*)tencent_appId tencentRewardId:(NSString*)tencent_rewardId ksAppId:(NSString*)ks_appId ksRewardId:(NSString*)ks_rewardId channel:(NSString*)_channel userId:(NSString*)user_id
+    useGroMore:(BOOL)useGroMore arguments:(NSDictionary*)dic result:(FlutterResult)result {
     appName = app_name;
     appId = app_id;
     pangolinAppId = pangolin_appId;
@@ -70,8 +78,13 @@
     TTFailedTime = -1;
     KSFailedTime = -1;
     YLHFailedTime = -1;
+    useGromore = useGroMore;
+    
+    proMoreId = [dic valueForKey:@"iosGroMoreId"];
+    proMoreJiLiId = [dic valueForKey:@"iosGroMoreJiLiId"];
     
     toastIntance = [JSToastDialogs shareInstance];
+    rootViewController = [[UIApplication sharedApplication] keyWindow].rootViewController;
     
     NSLog(@"%@", @"开始初始化广告SDK");
     if (@available(iOS 14, *)) {
@@ -79,10 +92,24 @@
             NSLog(@"%@", @"ATT权限");
         }];
     }
-    [self initKs];
-    [self initTencent];
-    [self initPangolin];
-    [self getAdFromNet];
+    if (useGroMore) {
+        [self initPangolin];
+        [self initGroMore];
+        [self preLoadAd];
+    } else {
+        [self initKs];
+        [self initTencent];
+        [self initPangolin];
+        [self getAdFromNet];
+    }
+}
+
+- (void)initGroMore {
+    [ABUAdSDKManager setupSDKWithAppId:proMoreId config:^ABUUserConfig *(ABUUserConfig * c) {
+//        c.extraDeviceMap = @{};
+        NSLog(@"聚合广告SDK初始化成功：%@", [ABUAdSDKManager SDKVersion]);
+        return c;
+    }];
 }
 
 - (void)initPangolin {
@@ -141,25 +168,42 @@
 }
 
 - (void)preLoadAd {
-    NSLog(@"下一个广告：%@, 备用广告：%@", [self getAdName:currentAd], [self getAdName:nextAd]);
-    switch (currentAd) {
-        case 1:
-            {
-                [self pangolinRewardVideoPreLoad];
-            }
-            break;
-        case 2:
-            {
-                [self ksRewardVideoPreLoad];
-            }
-            break;
-        case 3:
-            {
-                [self tencentRewardVideoPreLoad];
-            }
-            break;
-        default:
-            break;
+    if (useGromore) {
+        ABURewardedVideoModel *model = [[ABURewardedVideoModel alloc] init];
+        model.userId = userId;
+        ABURewardedVideoAd *rewardedVideoAd = [[ABURewardedVideoAd alloc] initWithAdUnitID:proMoreJiLiId rewardedVideoModel:model];
+        rewardedVideoAd.mutedIfCan = YES;
+        rewardedVideoAd.getExpressAdIfCan = YES;
+        rewardedVideoAd.delegate = self;
+//        __weak typeof(self) weakself = self;
+        if ([ABUAdSDKManager configDidLoad]) {
+            [rewardedVideoAd loadAdData];
+        } else {
+            [ABUAdSDKManager addConfigLoadSuccessObserver:self withAction:^(id  _Nonnull observer) {
+                [rewardedVideoAd loadAdData];
+            }];
+        }
+    } else {
+        NSLog(@"下一个广告：%@, 备用广告：%@", [self getAdName:currentAd], [self getAdName:nextAd]);
+        switch (currentAd) {
+            case 1:
+                {
+                    [self pangolinRewardVideoPreLoad];
+                }
+                break;
+            case 2:
+                {
+//                    [self ksRewardVideoPreLoad];
+                }
+                break;
+            case 3:
+                {
+                    [self tencentRewardVideoPreLoad];
+                }
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -170,7 +214,9 @@
     } else {
         [httpCenter setUserId:userId];
     }
-    [self getAdFromNet];
+    if (!useGromore) {
+        [self getAdFromNet];
+    }
 }
 
 - (void)displayAd:(NSString*)source result:(FlutterResult)result {
@@ -199,12 +245,16 @@
         flutterResult(resultDic);
         return;
     }
+    if (useGromore) {
+        [self displayGromoreAd:flutterResult];
+        return;
+    }
     switch (currentAd) {
         case 1:
             [self displayPangolinAd:flutterResult];
             break;
         case 2:
-            [self displayKsAd:flutterResult];
+//            [self displayKsAd:flutterResult];
             break;
         case 3:
             [self displayTencentAd:flutterResult];
@@ -225,8 +275,15 @@
 }
 
 - (void)displaySuccess: (int)adType {
-    NSLog(@"播放%@广告成功", [self getAdName:adType]);
-    [self updateShowInfo:1 adType:adType];
+    if (useGromore) {
+        NSLog(@"播放聚合广告成功");
+        [httpCenter uploadAdResult:currentSource adFlag:adType flag:1 jumpFlag:0 callback:^{
+            NSLog(@"广告上传服务器成功数据：%@", [self getAdName:self->currentAd]);
+        }];
+    } else {
+        NSLog(@"播放%@广告成功", [self getAdName:adType]);
+        [self updateShowInfo:1 adType:adType];
+    }
     NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"播放广告成功", @"message", [NSNumber numberWithBool:isAdClick], @"adClick", nil];
     flutterResult(resultDic);
 }
@@ -343,6 +400,71 @@
     return flag;
 }
 
+#pragma mark - Gromore广告
+
+- (void)displayGromoreAd:(FlutterResult)result {
+    if (abuRewardedVideoAd) {
+        if (abuRewardedVideoAd.isReady) {
+            [abuRewardedVideoAd showAdFromRootViewController:rootViewController];
+        } else {
+            NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"error", @"result", @"未加载完成请重新点击", @"message", nil];
+            result(resultDic);
+        }
+    } else {
+        NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"error", @"result", @"未加载完成请重新点击", @"message", nil];
+        result(resultDic);
+    }
+}
+
+//广告加载成功
+- (void)rewardedVideoAdDidLoad:(ABURewardedVideoAd *)rewardedVideoAd {
+    self->preLoadCurrentSuccess = true;
+    NSLog(@"预加载聚合广告成功");
+}
+
+//广告加载失败
+- (void)rewardedVideoAd:(ABURewardedVideoAd *)rewardedVideoAd didFailWithError:(NSError *)error {
+    NSLog(@"预加载聚合广告失败：%@", error.description);
+}
+
+//广告缓存(视频)成功
+- (void)rewardedVideoAdDidDownLoadVideo:(ABURewardedVideoAd *)rewardedVideoAd {
+    self->preLoadCurrentSuccess = true;
+    abuRewardedVideoAd = rewardedVideoAd;
+    NSLog(@"预加载（广告缓存）聚合广告成功");
+}
+
+//广告展示失败
+- (void)rewardedVideoAdDidShowFailed:(ABURewardedVideoAd *)rewardedVideoAd error:(NSError *)error {
+    NSLog(@"聚合广告展示失败：%@", error.description);
+}
+
+//广告展示成功
+- (void)rewardedVideoAdDidVisible:(ABURewardedVideoAd *)rewardedVideoAd {
+    NSLog(@"聚合广告显示");
+}
+
+//广告点击事件
+- (void)rewardedVideoAdDidClick:(ABURewardedVideoAd *)rewardedVideoAd {
+    NSLog(@"聚合广告点击");
+}
+
+//广告跳过事件
+- (void)rewardedVideoAdDidSkip:(ABURewardedVideoAd *)rewardedVideoAd {
+    NSLog(@"聚合广告跳过");
+}
+
+//广告关闭
+- (void)rewardedVideoAdDidClose:(ABURewardedVideoAd *)rewardedVideoAd {
+    [self displaySuccess:1];
+    [self preLoadAd];
+}
+
+//奖励发放的标识
+- (void)rewardedVideoAdServerRewardDidSucceed:(ABURewardedVideoAd *)rewardedVideoAd rewardInfo:(ABUAdapterRewardAdInfo *)rewardInfo verify:(BOOL)verify {
+    NSLog(@"聚合广告回调发放奖励");
+}
+
 #pragma mark - 穿山甲广告
 
 - (void)displayPangolinAd:(FlutterResult)result {
@@ -408,59 +530,59 @@
 
 #pragma mark - 快手广告
 
-- (void)displayKsAd:(FlutterResult)result {
-    if (ksRewardAd) {
-        UIViewController *rootViewController = [[UIApplication sharedApplication] keyWindow].rootViewController;
-        [ksRewardAd showAdFromRootViewController: rootViewController];
-    } else {
-        NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"error", @"result", @"未加载完成请重新点击", @"message", nil];
-        result(resultDic);
-    }
-}
-
-- (void)ksRewardVideoPreLoad {
-    KSRewardedVideoModel *model = [KSRewardedVideoModel new];
-    model.userId = userId;
-    ksRewardAd = [[KSRewardedVideoAd alloc] initWithPosId:ksRewardId rewardedVideoModel:model];
-    ksRewardAd.delegate = self;
-    [ksRewardAd loadAdData];
-}
-
-- (void)rewardedVideoAd:(KSRewardedVideoAd *)rewardedVideoAd didFailWithError:(NSError *)error {
-    NSLog(@"预加载快手广告失败：%@", error.description);
-    self->preLoadCurrentSuccess = false;
-}
-
-- (void)rewardedVideoAdDidLoad:(KSRewardedVideoAd *)rewardedVideoAd {
-    self->preLoadCurrentSuccess = true;
-    NSLog(@"预加载快手广告成功");
-}
-
-- (void)rewardedVideoAdDidVisible:(KSRewardedVideoAd *)rewardedVideoAd {
-    NSLog(@"快手广告显示");
+//- (void)displayKsAd:(FlutterResult)result {
+//    if (ksRewardAd) {
+//        UIViewController *rootViewController = [[UIApplication sharedApplication] keyWindow].rootViewController;
+//        [ksRewardAd showAdFromRootViewController: rootViewController];
+//    } else {
+//        NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"error", @"result", @"未加载完成请重新点击", @"message", nil];
+//        result(resultDic);
+//    }
+//}
+//
+//- (void)ksRewardVideoPreLoad {
+//    KSRewardedVideoModel *model = [KSRewardedVideoModel new];
+//    model.userId = userId;
+//    ksRewardAd = [[KSRewardedVideoAd alloc] initWithPosId:ksRewardId rewardedVideoModel:model];
+//    ksRewardAd.delegate = self;
+//    [ksRewardAd loadAdData];
+//}
+//
+//- (void)rewardedVideoAd:(KSRewardedVideoAd *)rewardedVideoAd didFailWithError:(NSError *)error {
+//    NSLog(@"预加载快手广告失败：%@", error.description);
+//    self->preLoadCurrentSuccess = false;
+//}
+//
+//- (void)rewardedVideoAdDidLoad:(KSRewardedVideoAd *)rewardedVideoAd {
+//    self->preLoadCurrentSuccess = true;
+//    NSLog(@"预加载快手广告成功");
+//}
+//
+//- (void)rewardedVideoAdDidVisible:(KSRewardedVideoAd *)rewardedVideoAd {
+//    NSLog(@"快手广告显示");
+////    [self startDisplay];
+//}
+//
+//- (void)rewardedVideoAd:(KSRewardedVideoAd *)rewardedVideoAd hasReward:(BOOL)hasReward {
+//    NSLog(@"广告回调发放奖励");
+//}
+//
+//- (void)rewardedVideoAdDidClose:(KSRewardedVideoAd *)rewardedVideoAd {
+//    [self displaySuccess:2];
+////    ksRewardAd = nil;
 //    [self startDisplay];
-}
-
-- (void)rewardedVideoAd:(KSRewardedVideoAd *)rewardedVideoAd hasReward:(BOOL)hasReward {
-    NSLog(@"广告回调发放奖励");
-}
-
-- (void)rewardedVideoAdDidClose:(KSRewardedVideoAd *)rewardedVideoAd {
-    [self displaySuccess:2];
-//    ksRewardAd = nil;
-    [self startDisplay];
-}
-
-- (void)rewardedVideoAdDidPlayFinish:(KSRewardedVideoAd *)rewardedVideoAd didFailWithError:(NSError *_Nullable)error {
-    if (error) {
-        [self displayError:error.description adType:2];
-    }
-}
-
-- (void)rewardedVideoAdDidClick:(KSRewardedVideoAd *)rewardedVideoAd {
-    isAdClick = true;
-    NSLog(@"快手广告点击");
-}
+//}
+//
+//- (void)rewardedVideoAdDidPlayFinish:(KSRewardedVideoAd *)rewardedVideoAd didFailWithError:(NSError *_Nullable)error {
+//    if (error) {
+//        [self displayError:error.description adType:2];
+//    }
+//}
+//
+//- (void)rewardedVideoAdDidClick:(KSRewardedVideoAd *)rewardedVideoAd {
+//    isAdClick = true;
+//    NSLog(@"快手广告点击");
+//}
 
 #pragma mark - 优量汇广告
 

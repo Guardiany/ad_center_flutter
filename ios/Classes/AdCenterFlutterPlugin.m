@@ -85,8 +85,10 @@
     NSString *ksRewardId = [dic valueForKey:@"ksIosRewardId"];
     NSString *channel = [dic valueForKey:@"channel"];
     NSString *userId = [dic valueForKey:@"userId"];
+    BOOL useGroMore = [dic valueForKey:@"userProMore"];
     adCenter = [[AdCenter alloc] init];
-    [adCenter initAppName:appName appId:appId pangolinAppId:pangolinAppId pangolinRewardId:pangolinRewardId tencentAppId:tencentAppId tencentRewardId:tencentRewardId ksAppId:ksAppId ksRewardId:ksRewardId channel:channel userId:userId result:result];
+    [adCenter initAppName:appName appId:appId pangolinAppId:pangolinAppId pangolinRewardId:pangolinRewardId tencentAppId:tencentAppId tencentRewardId:tencentRewardId ksAppId:ksAppId ksRewardId:ksRewardId channel:channel userId:userId useGroMore:useGroMore
+        arguments:(NSDictionary*)dic result:result];
 }
 
 @end
