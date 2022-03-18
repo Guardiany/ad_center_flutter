@@ -221,6 +221,7 @@ class AdCenterFlutter {
   static Future preLoadPangolinSplash({
     required String androidCodeId,
     required String iosCodeId,
+    String appid = '',
     SplashPreLoadSuccess? success,
     SplashPreLoadError? error,
     bool? userGroMore,
@@ -229,6 +230,7 @@ class AdCenterFlutter {
       'androidCodeId':androidCodeId,
       'iosCodeId':iosCodeId,
       'userGroMore': userGroMore,
+      'appId': appid,
     });
     if (result['result'] == 'success') {
       if (success != null) {

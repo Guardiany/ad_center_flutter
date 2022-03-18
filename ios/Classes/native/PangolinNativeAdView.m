@@ -8,15 +8,18 @@
 #import <Foundation/Foundation.h>
 #import "PangolinNativeAdView.h"
 #import "AdPreLoadManager.h"
+#import <ABUAdSDK/ABUAdSDK.h>
 
-@interface PangolinNativeAdView () <FlutterPlugin, BUNativeExpressAdViewDelegate>
+@interface PangolinNativeAdView () <FlutterPlugin, BUNativeExpressAdViewDelegate, ABUNativeAdsManagerDelegate, ABUNativeAdViewDelegate>
 
 @end
 
 @implementation PangolinNativeAdView {
     int64_t _viewId;
     BUNativeExpressAdManager *adManager;
+    ABUNativeAdsManager *gromoreManager;
     BUNativeExpressAdView *nativeAdView;
+    ABUNativeAdView *gromoreNativeView;
     UIWindow *container;
     FlutterMethodChannel *_channel;
     int adX;
@@ -61,6 +64,7 @@
     NSString *heightStr = [NSString stringWithFormat:@"%@",dic[@"height"]];
     NSString *xStr = [NSString stringWithFormat:@"%@",dic[@"positionX"]];
     NSString *yStr = [NSString stringWithFormat:@"%@",dic[@"positionY"]];
+    BOOL useGromore = dic[@"useGroMore"];
     
     adX = [xStr intValue];
     adY = [yStr intValue];
@@ -69,22 +73,88 @@
     
     NSValue *sizeValue = [NSValue valueWithCGSize:CGSizeMake(adWidth, adHeight)];
     CGSize size = [sizeValue CGSizeValue];
-    BUAdSlot *slot1 = [[BUAdSlot alloc] init];
-    slot1.ID = codeId;
-    slot1.AdType = BUAdSlotAdTypeFeed;
-    BUSize *imgSize = [BUSize sizeBy:BUProposalSize_Feed228_150];
-    slot1.imgSize = imgSize;
-    slot1.position = BUAdSlotPositionFeed;
-    if (!self->adManager) {
-        self->adManager = [[BUNativeExpressAdManager alloc] initWithSlot:slot1 adSize:CGSizeMake(size.width, size.height)];
+    
+    if (useGromore) {
+        ABUAdUnit *slot1 = [[ABUAdUnit alloc] init];
+        ABUSize *imgSize1 = [[ABUSize alloc] init];
+        imgSize1.width = adWidth;
+        imgSize1.height = adHeight;
+        slot1.ID = codeId;
+        slot1.AdType = ABUAdSlotAdTypeFeed;
+        slot1.position = ABUAdSlotPositionFeed;
+        slot1.imgSize = imgSize1;
+        slot1.isSupportDeepLink = YES;
+        slot1.adSize = CGSizeMake(adWidth, adHeight);
+        slot1.getExpressAdIfCan = YES;
+        if (!self->gromoreManager) {
+            self->gromoreManager = [[ABUNativeAdsManager alloc] initWithSlot:slot1];
+        }
+        self->gromoreManager.rootViewController = container.rootViewController;
+        self->gromoreManager.startMutedIfCan = NO;
+        self->gromoreManager.delegate = self;
+        if([ABUAdSDKManager configDidLoad]){
+            [self->gromoreManager loadAdDataWithCount:1];
+        } else {
+            [ABUAdSDKManager addConfigLoadSuccessObserver:self withAction:^(id  _Nonnull observer) {
+                [self->gromoreManager loadAdDataWithCount:1];
+            }];
+        }
+    } else {
+        BUAdSlot *slot1 = [[BUAdSlot alloc] init];
+        slot1.ID = codeId;
+        slot1.AdType = BUAdSlotAdTypeFeed;
+        BUSize *imgSize = [BUSize sizeBy:BUProposalSize_Feed228_150];
+        slot1.imgSize = imgSize;
+        slot1.position = BUAdSlotPositionFeed;
+        if (!self->adManager) {
+            self->adManager = [[BUNativeExpressAdManager alloc] initWithSlot:slot1 adSize:CGSizeMake(size.width, size.height)];
+        }
+        self->adManager.adSize = CGSizeMake(size.width, size.height);
+        self->adManager.delegate = self;
+        [self->adManager loadAdDataWithCount:1];
     }
-    self->adManager.adSize = CGSizeMake(size.width, size.height);
-    self->adManager.delegate = self;
-    [self->adManager loadAdDataWithCount:1];
 }
 
 - (nonnull UIView *)view {
     return container;
+}
+
+//聚合广告加载成功
+- (void)nativeAdsManagerSuccessToLoad:(ABUNativeAdsManager *)adsManager nativeAds:(NSArray<ABUNativeAdView *> *)nativeAdViewArray {
+    if (nativeAdViewArray.count) {
+        NSLog(@"聚合广告加载成功");
+        [nativeAdViewArray enumerateObjectsUsingBlock:^(ABUNativeAdView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            ABUNativeAdView *adView = (ABUNativeAdView *)obj;
+//            adView.rootViewController = container.rootViewController;
+            adView.frame = CGRectMake(adX, adY, adWidth, adHeight);
+            adView.backgroundColor = [UIColor whiteColor];
+            adView.delegate = self;
+            [adView render];
+        }];
+    }
+}
+
+//聚合广告加载失败
+- (void)nativeAdsManager:(ABUNativeAdsManager *)adsManager didFailWithError:(NSError *)error {
+    NSLog(@"聚合广告加载失败: %@", error.description);
+}
+
+//聚合广告渲染成功
+- (void)nativeAdExpressViewRenderSuccess:(ABUNativeAdView *)nativeExpressAdView {
+    gromoreNativeView = nativeExpressAdView;
+    if (!isDispose) {
+        [container.rootViewController.view addSubview:nativeExpressAdView];
+    }
+}
+
+//聚合广告渲染失败
+- (void)nativeAdExpressViewRenderFail:(ABUNativeAdView *)nativeExpressAdView error:(NSError *)error {
+    NSLog(@"聚合广告渲染失败: %@", error.description);
+}
+
+//聚合广告显示
+- (void)nativeAdDidBecomeVisible:(ABUNativeAdView *)nativeAdView {
+    NSLog(@"聚合广告显示");
 }
 
 //广告加载失败
@@ -126,6 +196,10 @@
         if (nativeAdView) {
             [nativeAdView removeFromSuperview];
             nativeAdView = nil;
+        }
+        if (gromoreNativeView) {
+            [gromoreNativeView removeFromSuperview];
+            gromoreNativeView = nil;
         }
     }
 }

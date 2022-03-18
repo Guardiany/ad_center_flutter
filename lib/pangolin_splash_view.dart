@@ -31,6 +31,14 @@ class _PangolinSplashViewState extends State<PangolinSplashView> {
   MethodChannel? _channel;
 
   @override
+  void initState() {
+    if (widget.userGroMore) {
+      _viewType = 'com.ahd.GromoreSpalsh';
+    }
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (Platform.isAndroid) {
       return AndroidView(

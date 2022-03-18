@@ -6,6 +6,8 @@
 #import "PangolinSplashViewFactory.h"
 #import "PangolinNativeAdFactory.h"
 #import "AdPreLoadManager.h"
+#import "GromorePreLoadManager.h"
+#import "GromoreSplashViewFactory.h"
 
 @implementation AdCenterFlutterPlugin {
     AdCenter *adCenter;
@@ -20,6 +22,7 @@
     [registrar registerViewFactory: [[PangolinSplashViewFactory alloc] initWithMessenger:registrar.messenger] withId:@"com.ahd.TTSplashView"];
     [registrar registerViewFactory:[[PangolinBannerViewFactory alloc] initWithMessenger:registrar] withId:@"com.ahd.TTBannerView"];
     [registrar registerViewFactory:[[PangolinNativeAdFactory alloc] initWithMessenger:registrar] withId:@"com.ahd.TTNativeView"];
+    [registrar registerViewFactory:[[GromoreSplashViewFactory alloc] initWithMessenger:registrar.messenger] withId:@"com.ahd.GromoreSpalsh"];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -32,13 +35,27 @@
   else if ([@"preLoadSplash" isEqualToString:call.method]) {
       NSDictionary *dic = call.arguments;
       NSString *iosCodeId = [dic valueForKey:@"iosCodeId"];
-      [[AdPreLoadManager instance] preLoadSplash:iosCodeId loadSuccess:^{
-          NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
-          result(resultDic);
-      } loadError:^{
-          NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"error", @"result", @"开屏广告预加载失败", @"message", nil];
-          result(resultDic);
-      }];
+      NSString *appid = [dic valueForKey:@"appId"];
+      BOOL useGromore = [dic valueForKey:@"userGroMore"];
+      if (useGromore) {
+          [[GromorePreLoadManager instance] preLoadSplash:appid codeId:iosCodeId loadSuccess:^{
+              NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
+              result(resultDic);
+          } loadError:^{
+              NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"error", @"result", @"开屏广告预加载失败", @"message", nil];
+              result(resultDic);
+          }];
+//          NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
+//          result(resultDic);
+      } else {
+          [[AdPreLoadManager instance] preLoadSplash:iosCodeId loadSuccess:^{
+              NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
+              result(resultDic);
+          } loadError:^{
+              NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"error", @"result", @"开屏广告预加载失败", @"message", nil];
+              result(resultDic);
+          }];
+      }
 //      NSDictionary *resultDic = [[NSDictionary alloc] initWithObjectsAndKeys:@"success", @"result", @"", @"message", nil];
 //      result(resultDic);
   }
