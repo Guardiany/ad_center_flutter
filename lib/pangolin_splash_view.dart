@@ -32,7 +32,7 @@ class _PangolinSplashViewState extends State<PangolinSplashView> {
 
   @override
   void initState() {
-    if (widget.userGroMore) {
+    if (widget.userGroMore && Platform.isIOS) {
       _viewType = 'com.ahd.GromoreSpalsh';
     }
     super.initState();

@@ -2,6 +2,7 @@ package com.ahd.ad_center_flutter.Ads.ProMore;
 
 import android.content.Context;
 import android.provider.Settings;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -39,6 +40,7 @@ public class GMAdManagerHolder {
         userInfo.setCustomInfos(customInfos);
 
         Map<String, Object> initConfig = new HashMap<>();
+        Log.e("!!!!!!!########", AdCenter.ProMoreId);
         return new GMAdConfig.Builder()
                 .setAppId(AdCenter.ProMoreId)
                 .setAppName(AdCenter.APPNAME)

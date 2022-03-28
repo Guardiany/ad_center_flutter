@@ -36,7 +36,7 @@
     [messenger addMethodCallDelegate:self channel:_channel];
     
     container = [[UIWindow alloc] initWithFrame:frame];
-    container.rootViewController = [[UIApplication sharedApplication] keyWindow].rootViewController;
+//    container.rootViewController = [[UIApplication sharedApplication] keyWindow].rootViewController;
     
     NSString *typeStr = [NSString stringWithFormat:@"%@",args[@"adType"]];
     int type = [typeStr intValue];
@@ -64,7 +64,7 @@
     NSString *heightStr = [NSString stringWithFormat:@"%@",dic[@"height"]];
     NSString *xStr = [NSString stringWithFormat:@"%@",dic[@"positionX"]];
     NSString *yStr = [NSString stringWithFormat:@"%@",dic[@"positionY"]];
-    BOOL useGromore = dic[@"useGroMore"];
+    bool useGromore = [[dic objectForKey:@"useGroMore"] boolValue];
     
     adX = [xStr intValue];
     adY = [yStr intValue];
@@ -89,7 +89,7 @@
         if (!self->gromoreManager) {
             self->gromoreManager = [[ABUNativeAdsManager alloc] initWithSlot:slot1];
         }
-        self->gromoreManager.rootViewController = container.rootViewController;
+//        self->gromoreManager.rootViewController = container.rootViewController;
         self->gromoreManager.startMutedIfCan = NO;
         self->gromoreManager.delegate = self;
         if([ABUAdSDKManager configDidLoad]){
@@ -143,7 +143,7 @@
 - (void)nativeAdExpressViewRenderSuccess:(ABUNativeAdView *)nativeExpressAdView {
     gromoreNativeView = nativeExpressAdView;
     if (!isDispose) {
-        [container.rootViewController.view addSubview:nativeExpressAdView];
+        [[[UIApplication sharedApplication] keyWindow].rootViewController.view addSubview:nativeExpressAdView];
     }
 }
 
@@ -186,7 +186,7 @@
     NSLog(@"native广告渲染成功");
     nativeAdView = nativeExpressAdView;
     if (!isDispose) {
-        [container.rootViewController.view addSubview:nativeExpressAdView];
+        [[[UIApplication sharedApplication] keyWindow].rootViewController.view addSubview:nativeExpressAdView];
     }
 }
 
@@ -201,6 +201,9 @@
             [gromoreNativeView removeFromSuperview];
             gromoreNativeView = nil;
         }
+//        if (self->gromoreManager != nil) {
+//
+//        }
     }
 }
 

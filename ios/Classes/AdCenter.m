@@ -57,7 +57,7 @@
 }
 
 - (void)initAppName:(NSString*)app_name appId:(NSString*)app_id pangolinAppId:(NSString*)pangolin_appId pangolinRewardId:(NSString*)pangolin_rewardId tencentAppId:(NSString*)tencent_appId tencentRewardId:(NSString*)tencent_rewardId ksAppId:(NSString*)ks_appId ksRewardId:(NSString*)ks_rewardId channel:(NSString*)_channel userId:(NSString*)user_id
-    useGroMore:(BOOL)useGroMore arguments:(NSDictionary*)dic result:(FlutterResult)result {
+    useGroMore:(bool)useGroMore arguments:(NSDictionary*)dic result:(FlutterResult)result {
     appName = app_name;
     appId = app_id;
     pangolinAppId = pangolin_appId;

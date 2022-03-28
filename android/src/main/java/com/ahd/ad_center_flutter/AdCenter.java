@@ -64,6 +64,7 @@ public class AdCenter {
     public static int nextAd = 2;
 
     public static boolean preLoadCurrentSuccess = false;
+    private boolean groMoreLoadSuccess = false;
     public static AdCenter adCenter;
     private AdInitListener adInitListener;
     private AdPreLoadListener adPreLoadListener;
@@ -396,18 +397,21 @@ public class AdCenter {
         adCenter.adPreLoadListener = new AdPreLoadListener() {
             @Override
             public void onPreLoadSuccess(int adFlag) {
+                currentAd = adFlag;
                 LogTools.printLog(this.getClass(), "预加载" + getAdName(adFlag) + "广告成功");
-                if (userProMore) {
-                    preLoadMap.put(adFlag,true);
-                    if(isWaiting){
-//                        LoadingDialogUtil.getInstance().closeLoadingDialog();
-                        displayAd("10",mPlayAdListener);
-                    }else{
-                        checkAndPreLoad();
-                    }
-                } else {
-                    preLoadCurrentSuccess = true;
+//                if (userProMore) {
+//                    preLoadMap.put(adFlag,true);
+//                    if(isWaiting){
+////                        LoadingDialogUtil.getInstance().closeLoadingDialog();
+//                        displayAd("10",mPlayAdListener);
+//                    }else{
+//                        checkAndPreLoad();
+//                    }
+//                }
+                if (adFlag == PROMOREAD) {
+                    groMoreLoadSuccess = true;
                 }
+                preLoadCurrentSuccess = true;
             }
 
             @Override
@@ -415,10 +419,13 @@ public class AdCenter {
                 LogTools.printLog(this.getClass(), "预加载" + getAdName(adFlag) + "失败：" + errorMessage);
                 if (userProMore) {
                     preLoadMap.put(adFlag,false);
-                    checkAndPreLoad();
+//                    checkAndPreLoad();
                 } else {
                     preLoadCurrentSuccess = false;
                 }
+//                if (mPlayAdListener != null) {
+//                    mPlayAdListener.onFailed(2, "广告拉取失败，请稍后再试。");
+//                }
             }
         };
         //初始化广告播放监听级
@@ -492,7 +499,8 @@ public class AdCenter {
             //仍在加载
             if(!preLoadMap.get(adFlagFromIndex.get(currentPreLoadIndex))){
                 //当前AD未预加载
-                preLoadAd(currentPreLoadIndex++,true);
+                preLoadAd(KSAD,true);
+                preLoadAd(PROMOREAD, true);
             }else{
                 //当前AD已经预加载
                 currentPreLoadIndex++;
@@ -503,12 +511,16 @@ public class AdCenter {
     }
 
     public void preLoadAd(int adFlag, boolean isIndex) {
-        if(isIndex){
-            adFlag  = adFlagFromIndex.get(adFlag);
-        }
+        //初始化普通激励广告，防止聚合广告加载失败的情况
+//        adFlag = KSAD;
+//        preLoadAd();
+//        if(isIndex){
+//            adFlag  = adFlagFromIndex.get(adFlag);
+//        }
         if (KSInitOK /*&& YLHInitOK*/ && PROMOREInitOk) {
             LogTools.printLog(this.getClass(), "开始预加载" + getAdName(adFlag) + "广告");
             preLoadCurrentSuccess = false;
+            groMoreLoadSuccess = false;
             needWait = true;
             switch (adFlag){
                 case PROMOREAD:
@@ -527,7 +539,7 @@ public class AdCenter {
     }
 
     public void preLoadAd() {
-        if (TTInitOK && KSInitOK && YLHInitOK) {
+        if (TTInitOK && KSInitOK /*&& YLHInitOK*/) {
             LogTools.printLog(this.getClass(), "开始预加载" + getAdName(currentAd) + "广告");
             switch (currentAd) {
                 case TTAD:
@@ -565,24 +577,29 @@ public class AdCenter {
         }
 
         //预加载失败
-        if (!userProMore) {
-            if (!preLoadCurrentSuccess) {
-                mPlayAdListener.onFailed(-3, "您播放的太快哦，慢慢来～～");
-                updateShowInfo(currentAd, 0, true);
-                return;
-            }
-        }
+//        if (!preLoadCurrentSuccess) {
+//            mPlayAdListener.onFailed(-3, "广告拉取失败，请稍后再试");
+//            updateShowInfo(currentAd, 0, true);
+//            preLoadAd(currentPreLoadIndex++,true);
+//            return;
+//        }
 
         if ((TTInitOK || PROMOREInitOk) && KSInitOK /*&& YLHInitOK*/) {
             if (userProMore) {
-                currentAd = -1;
-                if(preLoadMap.get(4)){
-                    currentAd = 4;
-                }else if(preLoadMap.get(2)){
-                    currentAd = 2;
-                }else if(preLoadMap.get(3)){
-                    currentAd = 3;
+                if (!preLoadCurrentSuccess) {
+                    mPlayAdListener.onFailed(-1, "广告加载失败，请稍后再来...");
+                    return;
                 }
+                if (groMoreLoadSuccess) {
+                    currentAd = PROMOREAD;
+                }
+//                if(preLoadMap.get(4)){
+//                    currentAd = 4;
+//                }else if(preLoadMap.get(2)){
+//                    currentAd = 2;
+//                }else if(preLoadMap.get(3)){
+//                    currentAd = 3;
+//                }
 
                 //预加载失败
                 if(currentAd == -1){

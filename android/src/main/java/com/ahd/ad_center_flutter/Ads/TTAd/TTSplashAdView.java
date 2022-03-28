@@ -86,7 +86,7 @@ public class TTSplashAdView implements PlatformView {
             //创建开屏广告请求参数AdSlot,具体参数含义参考文档
             GMAdSlotSplash adSlot = new GMAdSlotSplash.Builder()
                     .setImageAdSize(UIUtils.getScreenWidth(context), UIUtils.getScreenHeight(context)) // 单位px
-                    .setTimeOut(4000)//设置超时
+                    .setTimeOut(3000)//设置超时
                     .setSplashButtonType(GMAdConstant.SPLASH_BUTTON_TYPE_FULL_SCREEN)
                     .setDownloadType(GMAdConstant.DOWNLOAD_TYPE_POPUP)
 //                    .setForceLoadBottom(mForceLoadBottom) //强制加载兜底开屏广告，只能在GroMore提供的demo中使用，其他情况设置无效

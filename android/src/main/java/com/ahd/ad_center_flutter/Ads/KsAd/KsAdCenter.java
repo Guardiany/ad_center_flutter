@@ -167,14 +167,18 @@ public class KsAdCenter implements AdFather {
             });
 
             startTimerListener();
-            mActivity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    isStart = true;
-                    isDisPlaying = false;
-                    mRewardVideoAd.showRewardVideoAd(mActivity,null);
-                }
-            });
+
+            isStart = true;
+            isDisPlaying = false;
+            mRewardVideoAd.showRewardVideoAd(mActivity,null);
+//            mActivity.runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    isStart = true;
+//                    isDisPlaying = false;
+//                    mRewardVideoAd.showRewardVideoAd(mActivity,null);
+//                }
+//            });
         } else {
             //未加载失败
             mAdDisplayListener.onDisplayFailed(AdCenter.KSAD, 1, "未加载完成请击,请稍后..");

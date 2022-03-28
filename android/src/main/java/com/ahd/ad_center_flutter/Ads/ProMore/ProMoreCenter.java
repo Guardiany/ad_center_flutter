@@ -25,11 +25,12 @@ public class ProMoreCenter implements AdFather {
     private boolean mIsLoadedAndShow;//广告加载成功并展示
     private GMRewardedAdListener mGMRewardedAdListener;
     private AdDisplayListener mAdDisplayListener;
+    private AdPreLoadListener mAdPreLoadListener;
     private GMRewardedAdListener mGMRewardedPlayAgainListener;
     private GMRewardAd mGMRewardAd;
     private static AdRewardManager mAdRewardManager;
     private boolean isClicked = true;
-
+    private boolean isPreload = true;
 
     private static Activity mActivity;
 
@@ -54,12 +55,15 @@ public class ProMoreCenter implements AdFather {
 
     @Override
     public void preLoadAd(final AdPreLoadListener adPreLoadListener) {
+        mAdPreLoadListener = adPreLoadListener;
         mAdRewardManager.loadAd(new GMRewardedAdLoadCallback() {
             @Override
             public void onRewardVideoLoadFail(AdError adError) {
                 mLoadSuccess = false;
                 mAdRewardManager.printLoadFailAdnInfo();
-                adPreLoadListener.onPreLoadFailed(AdCenter.PROMOREAD,adError.message);
+                if (adPreLoadListener != null) {
+                    adPreLoadListener.onPreLoadFailed(AdCenter.PROMOREAD, adError.message);
+                }
             }
 
             @Override
@@ -67,7 +71,9 @@ public class ProMoreCenter implements AdFather {
                 //获取本次waterfall加载中，加载失败的adn错误信息。
                 if(!mLoadSuccess){
                     mLoadSuccess = true;
-                    adPreLoadListener.onPreLoadSuccess(AdCenter.PROMOREAD);
+                    if (adPreLoadListener != null) {
+                        adPreLoadListener.onPreLoadSuccess(AdCenter.PROMOREAD);
+                    }
                 }
                 mAdRewardManager.printLoadAdInfo(); //打印已经加载广告的信息
                 mAdRewardManager.printLoadFailAdnInfo();
@@ -78,7 +84,12 @@ public class ProMoreCenter implements AdFather {
                 if(!mLoadSuccess){
                     mLoadSuccess = true;
                     mAdRewardManager.printLoadAdInfo(); //打印已经加载广告的信息
-                    adPreLoadListener.onPreLoadSuccess(AdCenter.PROMOREAD);
+                    if (adPreLoadListener != null) {
+                        adPreLoadListener.onPreLoadSuccess(AdCenter.PROMOREAD);
+                    }
+                    if (!isPreload) {
+                        displayAd(mAdDisplayListener);
+                    }
                 }
             }
         });
@@ -101,7 +112,9 @@ public class ProMoreCenter implements AdFather {
                 adDisplayListener.onDisplayFailed(AdCenter.PROMOREAD,-1,"当前广告不满足显示的条件");
             }
         } else {
-            adDisplayListener.onDisplayFailed(AdCenter.PROMOREAD,-1,"预加载广高失败");
+//            adDisplayListener.onDisplayFailed(AdCenter.PROMOREAD,-1,"预加载广告失败");
+            isPreload = false;
+            preLoadAd(mAdPreLoadListener);
         }
     }
 

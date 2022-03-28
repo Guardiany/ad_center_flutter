@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.ahd.ad_center_flutter.AdCenter;
 import com.ahd.ad_center_flutter.Ads.AdListener.AdInitListener;
+import com.ahd.ad_center_flutter.Net.HttpCenter;
 import com.bytedance.msdk.adapter.util.Logger;
 import com.bytedance.msdk.api.GMAdEcpmInfo;
 import com.bytedance.msdk.api.v2.GMAdConstant;
@@ -15,7 +16,9 @@ import com.bytedance.msdk.api.v2.ad.reward.GMRewardedAdLoadCallback;
 import com.bytedance.msdk.api.v2.slot.GMAdOptionUtil;
 import com.bytedance.msdk.api.v2.slot.GMAdSlotRewardVideo;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AdRewardManager {
 
@@ -72,15 +75,19 @@ public class AdRewardManager {
          * （ 例如：mttRewardAd = new GMRewardAd(this, adUnitId);）
          */
         mGMRewardAd = new GMRewardAd(mActivity, mAdUnitId);
+        Map<String, String> customData = new HashMap<>();
+        customData.put(GMAdConstant.CUSTOM_DATA_KEY_PANGLE, "pangle media_extra");
         GMAdSlotRewardVideo adSlotRewardVideo = new GMAdSlotRewardVideo.Builder()
                 .setMuted(true)//对所有SDK的激励广告生效，除需要在平台配置的SDK，如穿山甲SDK
                 .setVolume(0f)//配合Admob的声音大小设置[0-1]
                 .setGMAdSlotGDTOption(GMAdOptionUtil.getGMAdSlotGDTOption().build())
 //                .setGMAdSlotBaiduOption(GMAdOptionUtil.getGMAdSlotBaiduOption().build())
-                .setUserID("ahd")//用户id,必传参数
-                .setUseSurfaceView(true)
+                .setCustomData(customData)
+                .setUserID(HttpCenter.userId)//用户id,必传参数
+                .setUseSurfaceView(false)
+                .setRewardName("奖励")
+                .setRewardAmount(1)
                 .setOrientation(GMAdConstant.VERTICAL)//必填参数，期望视频的播放方向：GMAdConstant.HORIZONTAL 或 GMAdConstant.VERTICAL
-                .setBidNotify(true)
                 .build();
         mGMRewardAd.loadAd(adSlotRewardVideo, gmRewardedAdLoadCallback);
     }
