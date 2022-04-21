@@ -5,6 +5,7 @@ import static com.bytedance.sdk.openadsdk.TTAdLoadType.PRELOAD;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -468,6 +469,11 @@ public class TTAdCenter implements AdFather {
             @Override
             public void onRewardVerify(boolean rewardVerify, int rewardAmount, String rewardName, int errorCode, String errorMsg) {
                 mAdDisplayListener.onVideoComplete(AdCenter.TTAD);
+            }
+
+            @Override
+            public void onRewardArrived(boolean b, int i, Bundle bundle) {
+
             }
 
             @Override

@@ -48,7 +48,7 @@ android {
         implementation "com.gromore.cn:pangle-adapter:4.2.0.2.0" //穿山甲 adapter
 
         //穿山甲
-        implementation 'com.pangle.cn:ads-sdk-pro:4.2.1.0'
+        implementation 'com.pangle.cn:ads-sdk-pro:4.4.0.2'
         //优量汇
         implementation 'com.qq.e.union:union:4.441.1311'
 

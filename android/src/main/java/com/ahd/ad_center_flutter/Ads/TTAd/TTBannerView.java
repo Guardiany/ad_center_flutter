@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import com.bytedance.msdk.api.v2.ad.banner.GMBannerAd;
 import com.bytedance.sdk.openadsdk.AdSlot;
 import com.bytedance.sdk.openadsdk.TTAdNative;
 import com.bytedance.sdk.openadsdk.TTAdSdk;
@@ -26,6 +27,7 @@ public class TTBannerView implements PlatformView {
     private final MethodChannel methodChannel;
     private final FrameLayout mExpressContainer;
     private TTNativeExpressAd bannerAd;
+    private boolean useGroMore;
 
     TTBannerView(Context context, BinaryMessenger messenger, int id, Map<String, Object> params) {
         this.context = context;
@@ -33,6 +35,7 @@ public class TTBannerView implements PlatformView {
         String codeId = (String) params.get("androidCodeId");
         Double width = (Double) params.get("width");
         Double height = (Double) params.get("height");
+        Boolean userGroMore = (Boolean) params.get("useGroMore");
         float fWidth = 640;
         float fHeight = 70;
         if (width != null) {
@@ -41,12 +44,21 @@ public class TTBannerView implements PlatformView {
         if (height != null) {
             fHeight = height.floatValue();
         }
+        boolean ugm = false;
+        if (userGroMore != null) {
+            ugm = userGroMore;
+        }
+        useGroMore = ugm;
         mExpressContainer = new FrameLayout(context);
         mExpressContainer.setBackgroundColor(Color.WHITE);
         loadBannerAd(codeId, fWidth, fHeight);
     }
 
     private void loadBannerAd(String codeId, float width, float height) {
+//        if (useGroMore) {
+//            mTTBannerViewAd = new GMBannerAd(context, codeId);
+//            return;
+//        }
         bannerAd = TTAdCenter.getInstance().getTtNativeBannerAd();
         if (bannerAd != null) {
             renderAd();
